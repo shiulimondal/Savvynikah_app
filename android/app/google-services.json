@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "895607551985",
+    "project_id": "savvynikah",
+    "storage_bucket": "savvynikah.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895607551985:android:6706fd381e3b766c3af650",
+        "android_client_info": {
+          "package_name": "com.savvynikah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB6CYqR_jOMrBzm6nFWKzWpahOcMeijXY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
