@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
 import Header from '../../../Components/Header/Header';
 import { FONTS } from '../../../Constants/Fonts';
 import { moderateScale } from '../../../Constants/PixelRatio';
@@ -23,6 +23,7 @@ const ForgotOTP = ({ navigation }) => {
     const [canResend, setCanResend] = useState(false);
     const [emailOtp, setEmailOtp] = useState('')
     const timerRef = useRef();
+
 
     useEffect(() => {
         startTimer();
@@ -55,7 +56,7 @@ const ForgotOTP = ({ navigation }) => {
         setBtnLoader(true)
         AuthService.getForgotPasswordOTP(data)
             .then((res) => {
-                console.log('veriiiiiiiiiiiiiiiiiiiiiiiiiiii',res);
+                // console.log('veriiiiiiiiiiiiiiiiiiiiiiiiiiii',res);
                 if (res && res.success == true) {
                     setBtnLoader(false)
                     Toast.show(res.message)

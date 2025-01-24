@@ -81,6 +81,30 @@ const getChangePassword = async (data) => {
 const getUserProfile = async (data) => {
     return HttpClient.post('/user', data);
 }
+const getsitesettings = async () => {
+    return HttpClient.post('/site-settings');
+}
+const fatchNotification_Count = async (data) => {
+    return HttpClient.post('/chat-notification-count',data);
+}
+const setChatUser  = async (data) => {
+    return HttpClient.post('/chat-with-user',data);
+}
+const setChatDetails  = async (data) => {
+    return HttpClient.post('/chat-details',data);
+}
+const setSendMessage  = async (data) => {
+    return HttpClient.post('/send-message',data);
+}
+const setChatUserList  = async () => {
+    return HttpClient.post('/chats');
+}
+const setDeleteUser  = async () => {
+    return HttpClient.post('/delete-account');
+}
+const setSettingsData  = async () => {
+    return HttpClient.post('/site-settings');
+}
 
 const HomeService = {
     getAccount,
@@ -108,7 +132,15 @@ const HomeService = {
     getMaslakList,
     getUpdateRegProfile,
     getChangePassword,
-    getUserProfile
+    getUserProfile,
+    getsitesettings,
+    fatchNotification_Count,
+    setChatUser,
+    setChatDetails,
+    setSendMessage,
+    setChatUserList,
+    setDeleteUser,
+    setSettingsData
 }
 
 export default HomeService;

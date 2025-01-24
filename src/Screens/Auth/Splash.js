@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, Image, Animated } from 'react-native';
 import { StatusBar } from 'react-native-basic-elements';
-import LinearGradient from 'react-native-linear-gradient';
 import { moderateScale } from '../../Constants/PixelRatio';
 import { useDispatch, useSelector } from 'react-redux';
 import AuthService from '../../Services/Auth';
@@ -76,13 +75,7 @@ const Splash = ({ navigation }) => {
                 barStyle='dark-content'
                 translucent={true}
             />
-            <View
-                // start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }}
-                // colors={['rgb(244, 247, 247)', 'rgb(243, 248, 255)']}
-                // locations={[0.1, 1]}
-                style={styles.gradient_view}
-            >
-
+            <View style={styles.gradient_view} >
                 <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
                     <Image source={require('../../assets/images/logo.png')} style={styles.logo_sty} />
                 </Animated.View>
@@ -102,7 +95,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: height,
         width: width,
-        backgroundColor:'#fff'
+        backgroundColor: '#fff'
     },
     logo_sty: {
         height: moderateScale(250),

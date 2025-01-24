@@ -132,10 +132,10 @@ const styles = StyleSheet.create({
   },
   openPickerButton: {
     backgroundColor: '#F6F5F5',
-    padding: 10,
+    padding: 12,
     borderRadius: 5,
     alignItems: 'center',
-    height: 45,
+    // height: 45,
     borderWidth: 1,
     borderColor: '#999',
     flexDirection: 'row',

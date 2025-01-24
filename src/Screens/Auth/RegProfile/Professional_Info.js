@@ -21,11 +21,8 @@ const Professional_Info = ({ navigation }) => {
   const colors = useTheme();
   const route = useRoute()
   const getPersonalData = route.params.personalData
-  console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++', getPersonalData);
+  // console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++', getPersonalData);
   const [liveIn, setLiveIn] = useState('');
-
-
-
 
   const orderStatusData = [
     { name: 'Personal Info' },
@@ -84,8 +81,6 @@ const Professional_Info = ({ navigation }) => {
   const [Educationdata, setEducationData] = useState([])
   const [educationId, setEducatonId] = useState(null);
 
-  console.log('EducationdataEducationdataEducationdata', Educationdata);
-
 
   const getEducationData = () => {
     AuthService.getEducationList()
@@ -111,7 +106,7 @@ const Professional_Info = ({ navigation }) => {
   const getLanguageData = () => {
     AuthService.getLanguagesList()
       .then((res) => {
-        console.log('ressectorrrrrrrrrrrrrr====================', res);
+        // console.log('ressectorrrrrrrrrrrrrr====================', res);
         if (res && res.status == true) {
           setLanguageData(res.data)
         }
@@ -125,13 +120,10 @@ const Professional_Info = ({ navigation }) => {
   const handleSelectLanguages = (id) => {
     setLanguageId(id)
   };
-  console.log('LanguageIdLanguageId========================', LanguageId);
 
-
-  const [Ocupationdata, setOcupationData] = useState([])
+ const [Ocupationdata, setOcupationData] = useState([])
   const [OcupationId, setOcupationId] = useState(null);
 
-  console.log('OcupationIdOcupationIdOcupationIdOcupationId', OcupationId);
 
 
   const getOcupationData = () => {
@@ -155,9 +147,6 @@ const Professional_Info = ({ navigation }) => {
 
   const [StatusData, setStatusData] = useState([])
   const [StatusId, setStatusId] = useState(null);
-
-  console.log('OcupationIdOcupationIdOcupationIdOcupationId', OcupationId);
-
 
   const getStatusData = () => {
     AuthService.getStatusList()

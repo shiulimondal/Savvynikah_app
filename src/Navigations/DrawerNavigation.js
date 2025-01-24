@@ -13,6 +13,7 @@ import MyWishlist from '../Screens/DrawerScreen/MyWishlist';
 import SingleChatScreen from '../Screens/DrawerScreen/SingleChatScreen';
 import ViewProfile from '../Screens/DrawerScreen/ViewProfile/ViewProfile';
 import GetPremium from '../Screens/DrawerScreen/GetPremium';
+import Support from '../Screens/DrawerScreen/Support';
 
 
 const Drawer = createDrawerNavigator();
@@ -39,6 +40,7 @@ const DrawerNavigation = () => {
             <Drawer.Screen name="MyWishlist" component={MyWishlist} />
             <Drawer.Screen name="SingleChatScreen" component={SingleChatScreen} />
             <Drawer.Screen name="ViewProfile" component={ViewProfile} />
+            <Drawer.Screen name="Support" component={Support} />
 
             {/* for extra---------------------- */}
             <Drawer.Screen name="GetPremium" component={GetPremium} />

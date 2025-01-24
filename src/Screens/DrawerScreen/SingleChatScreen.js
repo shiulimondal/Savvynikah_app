@@ -1,175 +1,229 @@
-// Import libraries
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
-import { GiftedChat, Send, Bubble, Composer } from 'react-native-gifted-chat';
-import { Icon, useTheme } from 'react-native-basic-elements';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Image } from 'react-native';
+import { AppTextInput, Icon, useTheme } from 'react-native-basic-elements';
 import { moderateScale } from '../../Constants/PixelRatio';
 import { FONTS } from '../../Constants/Fonts';
-import firestore from '@react-native-firebase/firestore';
-import uuid from 'react-native-uuid';
-import { Image } from 'react-native';
-
+import { useFocusEffect, useRoute } from '@react-navigation/native';
+import ChatHeader from '../../Components/Header/ChatHeader';
+import HomeService from '../../Services/HomeServises';
+import { useSelector } from 'react-redux';
+import ShimmerLoader from '../../ui/ShimmerLoader';
 
 const SingleChatScreen = () => {
-    const colors = useTheme();
-    const route = useRoute()
-    const chatUserData = route.params.userIdData;
-    const MyChatId = route.params.MyId;
-    const MyChatname = route.params.Myname;
+  const { userData } = useSelector(state => state.User);
+  const colors = useTheme();
+  const route = useRoute();
+  const { chatData: ChatUsers, senderName: SenderUserName } = route.params;
 
-    console.log("MyChatId=========================", MyChatId);
-    console.log("chatUserData.id:==============================", chatUserData?.id);
+  const [messageData, setMessageData] = useState([]);
+  const [sendMessage, setSendMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
+  const scrollViewRef = useRef(null);
 
-    const [messagesList, setMessages] = useState([]);
+  useFocusEffect(
+    useCallback(() => {
+      const interval = setInterval(getChatDetails, 3000);
+      return () => clearInterval(interval);
+    }, [ChatUsers])
+  );
 
-    useEffect(() => {
-        const chatId = `${MyChatId}-${ chatUserData.id}`;
-        console.log("chatId:===================", chatId);
-        console.log("userId:=====================", MyChatId, "recipientId:",  chatUserData.id); 
-
-        const unsubscribe = firestore()
-            .collection('Chats')
-            .doc(chatId)
-            .collection('Messages')
-            .orderBy('createdAt', 'desc')
-            .onSnapshot((querySnapshot) => {
-                const messagesFirestore = querySnapshot.docs.map(doc => {
-                    const firebaseData = doc.data();
-                    console.log("Message from Firestore:====================55555555555555555555", firebaseData); 
-
-                    const data = {
-                        _id: doc.id,
-                        text: firebaseData.text,
-                        createdAt: firebaseData.createdAt ? firebaseData.createdAt.toDate() : new Date(),
-                        user: firebaseData.user,
-                    };
-    
-                    return data;
-                });
-    
-                setMessages(messagesFirestore);
-            }, (error) => console.error("onSnapshot error:", error));
-    
-        return () => unsubscribe();
-    }, [MyChatId,  chatUserData.id]);
-    
-
-    const onSend = useCallback((newMessages = []) => {
-        const text = newMessages[0]?.text;
-        const chatId = `${MyChatId}-${ chatUserData.id}`;
-        
-        console.log("Sending message:====================", text); 
-        
-        if (text) {
-            firestore()
-                .collection('Chats')
-                .doc(chatId)
-                .collection('Messages')
-                .add({
-                    text,
-                    createdAt: firestore.FieldValue.serverTimestamp(),
-                    user: {
-                        _id: MyChatId,
-                        name: MyChatname,
-                    },
-                })
-                .catch((error) => console.error("Error adding message:", error));
+  const getChatDetails = useCallback(() => {
+    const data = { conversation_id: ChatUsers.id };
+    HomeService.setChatDetails(data)
+      .then(res => {
+        if (res?.status) {
+          setMessageData(res.data || []);
+        } else {
+          setMessageData([]);
         }
+      })
+      .catch(err => console.error('Error fetching chat details:', err))
+      .finally(() => {
+        setIsLoading(false);
+        scrollToBottom();
+      });
+  }, [ChatUsers]);
 
-        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-    }, [MyChatId,  chatUserData.id, MyChatname]);
+  const scrollToBottom = useCallback(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, []);
 
+  const sendMessageHandler = () => {
+    if (!sendMessage.trim()) return;
 
-    const renderBubble = (props) => {
-        return (
-            <Bubble
-                {...props}
-                wrapperStyle={{
-                    right: {
-                        backgroundColor: colors.senderView,
-                    },
-                    left: {
-                        backgroundColor: colors.secondaryThemeColor,
-                    },
-                }}
-                textStyle={{
-                    right: {
-                        color: '#000',
-                        fontFamily: FONTS.Inter.regular,
-                        fontSize: moderateScale(13),
-                    },
-                    left: {
-                        color: '#000',
-                        fontFamily: FONTS.Inter.regular,
-                        fontSize: moderateScale(13),
-                    },
-                }}
-            />
-        );
-    };
+    const data = { conversation_id: ChatUsers?.id, message: sendMessage.trim() };
+    HomeService.setSendMessage(data)
+      .then(res => {
+        if (res?.status) {
+          setSendMessage('');
+          getChatDetails();
+        }
+      })
+      .catch(err => console.error('Error sending message:', err));
+  };
 
-    return (
-        <View style={[styles.container, { backgroundColor: colors.chatScreen }]}>
-            <GiftedChat
-                messages={messagesList}
-                onSend={(val) => onSend(val)}
-                user={{ _id: MyChatId }}
-                renderBubble={renderBubble}
-                renderSend={(props) => (
-                    <Send {...props}>
-                        <View style={styles.sendButton}>
-                            <Image source={Image.resolveAssetSource(require('../../assets/images/send.png'))} style={styles.sendimg} />
-                        </View>
-                    </Send>
-                )}
-                placeholder="Message"
-                textInputStyle={{
-                    color: colors.secondaryFontColor,
-                    backgroundColor: colors.secondaryThemeColor,
-                    borderRadius: moderateScale(25),
-                    paddingLeft: moderateScale(10),
-                    fontSize: moderateScale(14),
-                }}
-                alwaysShowSend={true}
-                renderComposer={(props) => (
-                    <Composer
-                        {...props}
-                        textInputStyle={{
-                            color: colors.secondaryFontColor, 
-                            backgroundColor: colors.secondaryThemeColor,
-                            borderRadius: moderateScale(25),
-                            paddingLeft: moderateScale(10),
-                            fontSize: moderateScale(14),
-                        }}
-                    />
-                )}
-                showUserAvatar
-            />
+  const renderMessage = useCallback(
+    (item, isSender) => {
+      const messageBoxStyle = isSender ? styles.senderMessageBox : styles.receiverMessageBox;
+      const triangleStyle = isSender ? styles.senderTriangle : styles.receiverTriangle;
+      const containerStyle = isSender ? styles.senderContainer : styles.receiverContainer;
+      const userImage = isSender ? messageData.sender_image : messageData.receiver_image;
+
+      return (
+        <View style={containerStyle} key={item.id}>
+          {!isSender && <Image source={{ uri: userImage }} style={styles.userImage} />}
+          <View style={styles.messageContainer}>
+            <View style={[styles.messageBox, messageBoxStyle]}>
+              <View style={[styles.triangle, triangleStyle]} />
+              <Text numberOfLines={6} style={styles.messageText}>
+                {item.message_body}
+              </Text>
+              <Text style={styles.timeText}>{item.time}</Text>
+            </View>
+          </View>
+          {isSender && <Image source={{ uri: userImage }} style={styles.userImage} />}
         </View>
-    );
+      );
+    },
+    [messageData]
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.chatScreen }]}>
+      <ChatHeader title={SenderUserName} />
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {isLoading ? (
+          Array.from({ length: 10 }).map((_, index) => <ShimmerLoader key={index} style={styles.shimmerLoader} />)
+        ) : (
+          messageData?.messages?.map(item => renderMessage(item, item.user_id === userData.id))
+        )}
+      </ScrollView>
+      <View style={[styles.inputBox, { backgroundColor: colors.chatScreen }]}>
+        <AppTextInput
+          inputContainerStyle={[styles.inputContainer, { backgroundColor: colors.secondaryThemeColor }]}
+          inputStyle={[styles.textInput, { color: colors.secondaryFontColor }]}
+          placeholder="Message"
+          placeholderTextColor={colors.secondaryFontColor}
+          value={sendMessage}
+          onChangeText={setSendMessage}
+        />
+        <Pressable onPress={sendMessageHandler} style={[styles.sendButton, { backgroundColor: colors.second_txt }]}>
+          <Icon name="send" type="Ionicon" />
+        </Pressable>
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    sendButton: {
-        height: moderateScale(36),
-        width: moderateScale(36),
-        borderRadius: moderateScale(18),
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: moderateScale(5),
-        backgroundColor: 'green',
-        marginBottom: moderateScale(4),
-    },
-    sendimg: {
-        height: moderateScale(20),
-        width: moderateScale(20),
-        tintColor:'#fff'
-    }
+  container: {
+    flex: 1,
+    paddingBottom: moderateScale(70),
+  },
+  scrollContent: {
+    paddingBottom: moderateScale(70),
+  },
+  shimmerLoader: {
+    marginVertical: moderateScale(5),
+  },
+  inputBox: {
+    position: 'absolute',
+    bottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: moderateScale(15),
+  },
+  inputContainer: {
+    height: moderateScale(45),
+    width: moderateScale(265),
+    borderRadius: moderateScale(25),
+    paddingLeft: moderateScale(7),
+  },
+  textInput: {
+    fontFamily: FONTS.Inter.medium,
+    fontSize: moderateScale(12),
+  },
+  sendButton: {
+    height: moderateScale(40),
+    width: moderateScale(40),
+    borderRadius: moderateScale(30),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: moderateScale(15),
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: moderateScale(5),
+  },
+  messageBox: {
+    padding: moderateScale(10),
+    width: moderateScale(230),
+    borderRadius: moderateScale(5),
+    position: 'relative',
+  },
+  messageText: {
+    fontFamily: FONTS.Inter.regular,
+    fontSize: moderateScale(13),
+  },
+  timeText: {
+    position: 'absolute',
+    bottom: moderateScale(5),
+    right: moderateScale(5),
+    fontSize: moderateScale(10),
+    fontFamily: FONTS.Inter.medium,
+  },
+  senderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: moderateScale(5),
+  },
+  receiverContainer: {
+    flexDirection: 'row',
+    padding: moderateScale(5),
+  },
+  senderMessageBox: {
+    backgroundColor: '#fff',
+    marginRight: moderateScale(10),
+  },
+  receiverMessageBox: {
+    backgroundColor: '#fff',
+    marginLeft: moderateScale(10),
+  },
+  triangle: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent',
+  },
+  senderTriangle: {
+    right: -moderateScale(13),
+    borderRightWidth: moderateScale(15),
+    borderTopWidth: moderateScale(7),
+    borderBottomWidth: moderateScale(2),
+    borderRightColor: '#fff',
+  },
+  receiverTriangle: {
+    left: -moderateScale(13),
+    borderLeftWidth: moderateScale(15),
+    borderTopWidth: moderateScale(7),
+    borderBottomWidth: moderateScale(2),
+    borderLeftColor: '#fff',
+  },
+  userImage: {
+    height: moderateScale(30),
+    width: moderateScale(30),
+    borderRadius: moderateScale(20),
+    resizeMode: 'cover',
+    marginHorizontal: moderateScale(10),
+  },
 });
 
 export default SingleChatScreen;

@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component, useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
 import ChatListCard from '../../Components/DrawerCard/ChatListCard';
 import { ScrollView } from 'react-native';
 import { Image } from 'react-native';
@@ -10,118 +10,181 @@ import { useTheme } from 'react-native-basic-elements';
 import firestore from '@react-native-firebase/firestore';
 import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
+import ShimmerLoader from '../../ui/ShimmerLoader';
+import { FONTS } from '../../Constants/Fonts';
+import NavigationService from '../../Services/Navigation';
 
 const MyChat = () => {
     const colors = useTheme();
     const [loading, setLoading] = useState(true);
-    const [ProfileListData, setProfileListData] = useState([]);
-    const { userData } = useSelector(state => state.User); 
+    const [userList, setUserList] = useState([]);
+    const {  } = useSelector(state => state.User);
 
+    console.log('chattttuserDatatttttttttttttttttttttttttttttttttt', JSON.stringify(userList));
 
     useFocusEffect(
         useCallback(() => {
-            getUserData();
-          return () => {
-          };
-        }, [ProfileListData])
-      );
+            const fetchChatUserList = async () => {
+                setLoading(true);
+                HomeService.setChatUserList()
+                    .then((res) => {
+                        // console.log('userchattttttttttttttttttttttt=========---------------------==============', JSON.stringify(res));
+                        if (res && res.status == true) {
+                            setUserList(res.data)
+                        }
+                        setLoading(false);
+                    })
+            };
+            fetchChatUserList();
+            getChatWith();
+            return () => { };
+        }, [])
+    );
 
-    const getUserData = async () => {
+    const getChatWith = (itemId,Rname) => {
+        console.log('itemId,RnameitemId,RnameitemId,Rname',itemId,Rname);
+        
         const data = {
-            gender: null,
-            marital_status: null,
-            education_id: null,
-            occupation_id: null,
-            min_height: null,
-            max_height: null,
-            min_age: null,
-            max_age: null,
-            caste: null,
+            "user_id": itemId
         };
-
-        try {
-            const res = await HomeService.getuserListNdFilterData(data);
-            if (res?.success) {
-                const users = res.data;
-                const usersWithLastMessage = await fetchLastMessages(users);
-                setProfileListData(usersWithLastMessage);
-            } else {
-                console.error("Data fetch unsuccessful");
-            }
-        } catch (err) {
-            console.log('Error fetching user list:', err);
-        } finally {
-            setLoading(false);
-        }
+        console.log('Fetching chat data------------------------------------- for user:', data);   
+        HomeService.setChatUser(data)
+            .then((res) => {
+                console.log('Fetched chat user============================= response:', res);
+                if (res && res.status === true) {
+                    NavigationService.navigate('SingleChatScreen', {
+                        chatData: res.data,
+                        senderName: Rname
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching chat user:", error);
+            });
     };
 
-    const fetchLastMessages = async (users) => {
-        const updatedUsers = await Promise.all(users.map(async (user) => {
-            const chatId = `${userData.id}-${user.id}`;
-            try {
-                const lastMessageSnapshot = await firestore()
-                    .collection('Chats')
-                    .doc(chatId)
-                    .collection('Messages')
-                    .orderBy('createdAt', 'desc')
-                    .limit(1)
-                    .get();
 
-                const lastMessage = lastMessageSnapshot.docs[0]?.data();
-                return { ...user, lastMessageText: lastMessage?.text || '' };
-            } catch (error) {
-                console.error(`Error fetching last message for ${chatId}:`, error);
-                return { ...user, lastMessageText: '' };
-            }
-        }));
-        return updatedUsers;
-    };
+    const unseenMessage = userList?.unread_messages_count > 99 ? '99+' : userList?.unread_messages_count;
 
     return (
         <View style={styles.container}>
-            <View>
-                {loading ? (
-                    <View style={styles.loaderContainer}>
-                        <ActivityIndicator size="large" color="#fff" />
-                    </View>
-                ) : (
-                    <View>
-                        {ProfileListData?.length > 0 ? (
-                            <View style={{ ...styles.Main_list_view, backgroundColor: colors.primaryFontColor }}>
-                                <ScrollView showsVerticalScrollIndicator={false}>
-                                    {ProfileListData.map((item, index) => (
-                                        <ChatListCard key={item.id || index} item={item} index={index} />
-                                    ))}
-                                </ScrollView>
-                            </View>
+            {loading ? (
+                <View style={styles.loaderContainer}>
+
+                    <FlatList
+                        data={[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, , 1, 1, 1, 1, 1]}
+                        renderItem={({ item, index }) => (
+                            <ShimmerLoader />
+                        )}
+                        keyExtractor={(item, index) => index.toString()}
+                        showsVerticalScrollIndicator={false}
+                    />
+                </View>
+            ) : (
+                <View style={{ ...styles.Main_list_view, backgroundColor: colors.primaryFontColor }}>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        {userList.length > 0 ? (
+                            userList.map((item, index) => (
+                                // <ChatListCard key={item.id || index} item={item} index={index} />
+                                <TouchableOpacity
+                                key={index}
+                                onPress={() => getChatWith(item?.receiver_id, item?.receiver_name)}
+                                style={{ ...styles.chatcontainer, backgroundColor: colors.secondaryThemeColor }}>
+                                <Image source={{ uri: item?.receiver_image }} style={styles.user_img} />
+                                <View style={styles.meddagebody}>
+                                    <View>
+                                        <Text style={{ ...styles.user_name, color: colors.secondaryFontColor }}>{item?.receiver_name}</Text>
+                                        <Text style={{ ...styles.message_txt, color: colors.light_txt }}>{item?.lastMessage?.message_body}</Text>
+                                    </View>
+                                    <View style={{alignItems:'center'}}>
+                                        {
+                                            item?.unread_messages_count > 0 ?
+                                                <View style={styles.unread_circle}>
+                                                    <Text style={{ ...styles.countnumber, color: colors.secondaryThemeColor }}>
+                                                        {unseenMessage}</Text>
+                                                </View>
+                                                :
+                                                null
+                                        }
+                                        <Text style={{ ...styles.countnumber,marginTop:moderateScale(7), color: colors.secondaryFontColor }}>
+                                            {item?.lastMessage?.time}</Text>
+                                    </View>
+                    
+                                </View>
+                    
+                            </TouchableOpacity>
+                            ))
                         ) : (
                             <View style={styles.noDataView}>
                                 <Image source={require('../../assets/images/nodata.png')} style={styles.nodataImg} />
                             </View>
                         )}
-                    </View>
-                )}
-            </View>
+                    </ScrollView>
+                </View>
+            )}
         </View>
     );
 };
-// define your styles
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginHorizontal:0
+        marginHorizontal: 0,
+         backgroundColor:'#fff'
     },
     noDataView: {
         justifyContent: 'center',
         alignItems: 'center',
         padding: moderateScale(20),
-        marginTop: moderateScale(100)
+        marginTop: moderateScale(100),
+        flex:1,
+        backgroundColor:'#fff'
     },
-
     nodataImg: {
         height: moderateScale(100),
         width: moderateScale(100),
         tintColor: 'green'
+    },
+
+    chatcontainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        elevation: 4,
+        padding: moderateScale(10),
+        paddingHorizontal: moderateScale(15)
+    },
+    user_img: {
+        height: moderateScale(65),
+        width: moderateScale(65),
+        borderRadius: moderateScale(40),
+        resizeMode: 'cover'
+    },
+    user_name: {
+        fontFamily: FONTS.Inter.semibold,
+        fontSize: moderateScale(14)
+    },
+    message_txt: {
+        fontFamily: FONTS.Inter.regular,
+        fontSize: moderateScale(12),
+        marginTop: moderateScale(10)
+    },
+    meddagebody: {
+        marginLeft: moderateScale(10),
+        flexDirection: 'row',
+        flex: 1,
+        justifyContent: 'space-between'
+    },
+    unread_circle: {
+        height: moderateScale(18),
+        width: moderateScale(18),
+        borderRadius: moderateScale(9),
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(2,142,0,0.6)'
+    },
+    countnumber: {
+        fontFamily: FONTS.Inter.medium,
+        fontSize: moderateScale(9),
     }
 });
 

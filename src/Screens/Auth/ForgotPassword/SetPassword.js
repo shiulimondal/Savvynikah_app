@@ -16,7 +16,7 @@ const SetPassword = () => {
     const colors = useTheme()
     const route = useRoute()
     const AllOTPData = route.params.OTPData
-    console.log('redddddddddddddddddddddddddddddddooooo77777777777777777777', AllOTPData);
+    // console.log('redddddddddddddddddddddddddddddddooooo77777777777777777777', AllOTPData);
     const [btnLoader, setBtnLoader] = useState(false);
     const [password, setPassword] = useState('')
     const [cnfpassword, setCnfPassword] = useState('')
@@ -54,7 +54,7 @@ const SetPassword = () => {
         setBtnLoader(true)
         AuthService.getREsetForgotPassword(data)
             .then((res) => {
-                console.log('veriiiiiiiiiiiiiiiiiiiiiiiiiiii',res);
+                // console.log('veriiiiiiiiiiiiiiiiiiiiiiiiiiii',res);
                 if (res && res.success == true) {
                     setBtnLoader(false)
                     Toast.show(res.message)

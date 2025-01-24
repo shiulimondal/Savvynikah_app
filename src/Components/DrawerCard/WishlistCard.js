@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { moderateScale } from '../../Constants/PixelRatio';
 import { AppButton, Icon, useTheme } from 'react-native-basic-elements';
 import { FONTS } from '../../Constants/Fonts';
@@ -9,62 +9,48 @@ import HomeService from '../../Services/HomeServises';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // create a component
-const WishlistCard = ({ item, index }) => {
+const WishlistCard = ({ item, index, setWishList }) => {
   const colors = useTheme();
   const [isInWishlist, setIsInWishlist] = useState(item.flag === 0);
-
-  const removeFromWishlist = async () => {
-    const data = { "user_id": item.id };
-
-    try {
-      // Remove from wishlist
-      await HomeService.getRemoveWislit(data);
-      console.log('Removed from wishlist');
-      setIsInWishlist(false);
-      
-      // Update wishlist in AsyncStorage
-      const wishlist = await AsyncStorage.getItem('wishlist');
-      const parsedWishlist = JSON.parse(wishlist) || [];
-      const updatedWishlist = parsedWishlist.filter(id => id !== item.id);
-      await AsyncStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-
-    } catch (error) {
-      console.log('Error removing from wishlist:', error);
-    }
+  
+  const removeFromWishlist = async (removeId) => {
+    const data = { "user_id":  removeId};
+    HomeService.getRemoveWislit(data)
+      .then((res) => {
+        console.log('Removed from wishlist', res);
+        setIsInWishlist(false);
+        setWishList(prevList => prevList.filter(wishItem => wishItem.id !== removeId));
+      })
+      .catch((err) => {
+        console.log('Error removing from wishlist', err);
+      });
   };
-
   return (
     <View key={index} style={{ ...styles.container, backgroundColor: colors.primaryFontColor }}>
-      <View style={{
-        position: 'absolute',
-        right: moderateScale(8),
-        top: moderateScale(7)
-      }}>
+      <View style={{ position: 'absolute', right: moderateScale(8), top: moderateScale(7) }}>
+        <TouchableOpacity
+        onPress={()=>  removeFromWishlist(item.id)}
+        >
         <Icon
-          name='heart'
-          type='AntDesign'
+          name="heart"
+          type="AntDesign"
           color={'red'}
           size={12}
-          onPress={removeFromWishlist}
         />
+        </TouchableOpacity>
+       
       </View>
 
       <Image
-        source={item?.profile_images?.length > 0 ? { uri: item?.profile_images[0]?.url } :
-          require('../../assets/images/user.png')}
+        source={
+          item?.profile_images?.length > 0 ? { uri: item?.profile_images[0]?.url } : require('../../assets/images/user.png')
+        }
         style={styles.user_img}
       />
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginLeft: moderateScale(7),
-        flex: 1
-      }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginLeft: moderateScale(7), flex: 1 }}>
         <View>
           <Text style={styles.usr_name}>{item.name}</Text>
-          {item.occupation ? (
-            <Text style={styles.occupation}> {item.occupation.name}</Text>
-          ) : null}
+          {item.occupation ? <Text style={styles.occupation}>{item.occupation.name}</Text> : null}
         </View>
         <View style={{ alignItems: 'center' }}>
           {item.age ? (
@@ -88,8 +74,6 @@ const WishlistCard = ({ item, index }) => {
     </View>
   );
 };
-
-
 
 // define your styles
 const styles = StyleSheet.create({

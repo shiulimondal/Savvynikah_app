@@ -25,7 +25,7 @@ const Other_Info = ({ navigation }) => {
     const colors = useTheme();
     const route = useRoute()
     const getOtherInfo = route.params.OtherInfoData
-    console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++++++++++++', getOtherInfo);
+    // console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++++++++++++', getOtherInfo);
     const [address, setAddress] = useState('');
     const [pinCode, setPinCode] = useState('');
     const [hobby, setHobby] = useState('');
@@ -120,11 +120,7 @@ const Other_Info = ({ navigation }) => {
         setCityId(item.id);
     };
 
-    console.log('statttttttttttttttttttttttttttttttttttttttttt',stateId);
-    console.log('cityyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',cityId);
     
-
-
     const getUpdateProfile = (() => {
         let hasError = false;
         if (address === '') {
@@ -190,10 +186,10 @@ const Other_Info = ({ navigation }) => {
             "images": getOtherInfo?.images
         }
         setBtnLoader(true)
-        console.log('Signup data:==========000000000000000000000000000000000000000000======fulllllllllllllllllllllllllllllll====', data);
+        // console.log('Signup data:==========00000000000000000000====', data);
         AuthService.getUpdateRegProfile(data)
             .then((res) => {
-                console.log('Signup successful========================================fulllllllllllllll=======================', res);
+                // console.log('Signup successful=======================', res);
                 if (res && res.status == true) {
                     setModalVisible(true);
                     setTimeout(() => {
@@ -207,10 +203,9 @@ const Other_Info = ({ navigation }) => {
                     setBtnLoader(false)
                     Toast.show(res.message)
                 }
-                console.log('Signup successful======================', res);
             })
             .catch((err) => {
-                console.log('finallllllllllllllllSignup error======', err);
+                // console.log('finallllllllllllllllSignup error======', err);
                 setBtnLoader(false)
             });
     });
@@ -252,26 +247,6 @@ const Other_Info = ({ navigation }) => {
                             <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>{getOtherInfo?.sectorName}</Text>
                         </View>
                     </View>
-
-                    {/* <View style={styles.inputbox_view}>
-                        <View>
-                            <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Address</Text>
-                            <AppTextInput
-                                inputContainerStyle={{ ...styles.inputcontainer_sty }}
-                                inputStyle={{ ...styles.text_input, color: colors.secondaryFontColor }}
-                                value={address}
-                                onChangeText={(val) => setAddress(val)}
-                            />
-                        </View>
-                        <View>
-                            <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Select State</Text>
-                            <SinglePicker
-                                data={stateData}
-                                placeholder="Select State"
-                                onSelectItem={handleStateItem}
-                            />
-                        </View>
-                    </View> */}
 
                     <View style={styles.inputbox_view}>
                         <View>

@@ -210,8 +210,6 @@ const FilterCardddd = ({ setModalVisible, onSaveFilter }) => {
             />
           </View>
 
-
-
           <View style={styles.caste_view}>
             <Text style={{ ...styles.caste_txt, color: colors.primaryFontColor }}>Marital Status</Text>
           </View>
@@ -227,9 +225,6 @@ const FilterCardddd = ({ setModalVisible, onSaveFilter }) => {
               <Text style={{ ...styles.caste_title, color: colors.primaryFontColor }}>{status.name}</Text>
             </View>
           ))}
-
-
-
 
           <View style={styles.caste_view}>
             <Text style={{ ...styles.caste_txt, color: colors.primaryFontColor }}>Education</Text>

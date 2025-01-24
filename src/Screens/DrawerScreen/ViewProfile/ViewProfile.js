@@ -12,18 +12,23 @@ import { useFocusEffect, useRoute } from '@react-navigation/native';
 import HomeService from '../../../Services/HomeServises';
 import Modal from "react-native-modal";
 import NavigationService from '../../../Services/Navigation';
+import { useSelector } from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
+
 
 const { height, width } = Dimensions.get('screen');
 
 const ViewProfile = () => {
+    const { userData } = useSelector(state => state.User)
     const [selectScreen, setSelectScreen] = useState('Presonal Info');
     const colors = useTheme();
     const route = useRoute()
     const profileid = route.params.userId;
-    // console.log('idddddddddddddddddddddddddddd', profileid);
+
 
     const [loading, setLoading] = useState(true);
     const [userProfileData, setUserProfileData] = useState([])
+    // console.log('idddddddddddddddddddddddddddd===========================', userProfileData);
 
     const [isModalVisible, setModalVisible] = useState(false);
     const toggleModal = () => {
@@ -44,11 +49,11 @@ const ViewProfile = () => {
 
     useFocusEffect(
         useCallback(() => {
-          getUserData();
-          return () => {
-          };
+            getUserData();
+            return () => {
+            };
         }, [profileid])
-      );
+    );
 
     const getUserData = () => {
         let data = {
@@ -81,6 +86,20 @@ const ViewProfile = () => {
             });
     };
 
+    const getChatWith = (() => {
+        let data = {
+            "user_id": userProfileData?.id
+        }
+        HomeService.setChatUser(data)
+            .then((res) => {
+                if (res && res.status == true) {
+                    NavigationService.navigate('SingleChatScreen', { chatData: res.data,senderName:userProfileData?.full_name })
+
+                }
+
+            })
+    })
+
     return (
         <View style={styles.container}>
 
@@ -89,65 +108,75 @@ const ViewProfile = () => {
                     <ActivityIndicator size="large" color="green" />
                 </View>
             ) : (
+                <>
+                    <ScrollView showsVerticalScrollIndicator={false}>
 
+                        <View style={{ height: height / 4.2 }}>
+                            {
+                                userProfileData?.profile_images?.length === 1 ?
+                                    <View style={{ height: height / 2.7 }}>
+                                        <Image source={{ uri: userProfileData?.profile_images[0]?.url }} style={styles.bannerImg} />
+                                    </View>
+                                    :
+                                    <SwiperFlatList
+                                        showPagination
+                                        autoplay
+                                        autoplayDelay={3}
+                                        autoplayLoop
+                                        paginationStyle={styles.paginationStyle}
+                                        paginationStyleItemActive={{
+                                            ...styles.paginationItem,
+                                            backgroundColor: colors.buttonColor,
+                                        }}
+                                        paginationStyleItemInactive={{
+                                            ...styles.paginationItem,
+                                            backgroundColor: colors.shadowColor,
+                                        }}
+                                        data={userProfileData?.profile_images}
+                                        renderItem={({ item }) => (
+                                            <View style={{ height: height / 2.7 }}>
+                                                <Image source={{ uri: item.url }} style={styles.bannerImg} />
+                                            </View>
+                                        )}
+                                    />
+                            }
 
-                <ScrollView showsVerticalScrollIndicator={false}>
-
-                    <View style={{ height: height / 4.2 }}>
-                        {
-                            userProfileData?.profile_images?.length === 1 ?
-                                <View style={{ height: height / 2.7 }}>
-                                    <Image source={{ uri: userProfileData?.profile_images[0]?.url }} style={styles.bannerImg} />
-                                </View>
-                                :
-                                <SwiperFlatList
-                                    showPagination
-                                    autoplay
-                                    autoplayDelay={2}
-                                    autoplayLoop 
-                                    paginationStyle={styles.paginationStyle}
-                                    paginationStyleItemActive={{
-                                        ...styles.paginationItem,
-                                        backgroundColor: colors.buttonColor,
-                                    }}
-                                    paginationStyleItemInactive={{
-                                        ...styles.paginationItem,
-                                        backgroundColor: colors.shadowColor,
-                                    }}
-                                    data={userProfileData?.profile_images}
-                                    renderItem={({ item }) => (
-                                        <View style={{ height: height / 2.7 }}>
-                                            <Image source={{ uri: item.url }} style={styles.bannerImg} />
-                                        </View>
-                                    )}
-                                />
-                        }
-
-                    </View>
-                    <View style={[styles.tabView, { backgroundColor: colors.shadowColor }]}>
-                        {['Presonal Info', 'Preferences', 'Professional Info'].map((screen) => (
-                            <Pressable
-                                key={screen}
-                                style={[
-                                    styles.tabScreenView,
-                                    { backgroundColor: selectScreen === screen ? colors.buttonColor : colors.shadowColor },
-                                ]}
-                                onPress={() => setSelectScreen(screen)}
-                            >
-                                <Text
+                        </View>
+                        <View style={[styles.tabView, { backgroundColor: colors.shadowColor }]}>
+                            {['Presonal Info', 'Preferences', 'Professional Info'].map((screen) => (
+                                <Pressable
+                                    key={screen}
                                     style={[
-                                        styles.screenText,
-                                        { color: selectScreen === screen ? colors.primaryFontColor : colors.secondaryFontColor },
+                                        styles.tabScreenView,
+                                        { backgroundColor: selectScreen === screen ? colors.buttonColor : colors.shadowColor },
                                     ]}
+                                    onPress={() => setSelectScreen(screen)}
                                 >
-                                    {screen}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    {renderContentScreen()}
-                </ScrollView>
+                                    <Text
+                                        style={[
+                                            styles.screenText,
+                                            { color: selectScreen === screen ? colors.primaryFontColor : colors.secondaryFontColor },
+                                        ]}
+                                    >
+                                        {screen}
+                                    </Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                        {renderContentScreen()}
+                    </ScrollView>
+
+                    <TouchableOpacity onPress={() => getChatWith()}
+
+                        style={styles.chat_circle}
+                    >
+                        <Image source={require('../../../assets/images/messenger.png')} style={styles.chat_img} />
+                    </TouchableOpacity>
+
+                </>
             )}
+
+
 
             <Modal
                 isVisible={isModalVisible}
@@ -163,14 +192,15 @@ const ViewProfile = () => {
                     <Text style={{ ...styles.subcs_txt, color: colors.second_txt }}>You have Purchase a subscription plan to view the profile.</Text>
 
                     <TouchableOpacity
-                        onPress={() =>{
-                            NavigationService.navigate('GetPremium'),setModalVisible(false)
+                        onPress={() => {
+                            NavigationService.navigate('GetPremium'), setModalVisible(false)
                         }}
                         style={{ ...styles.save_btn, backgroundColor: colors.buttonColor }}>
                         <Text style={{ ...styles.canclebtn_txt, color: colors.primaryFontColor }}>OK</Text>
                     </TouchableOpacity>
                 </View>
             </Modal>
+
         </View>
     );
 };
@@ -250,6 +280,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: moderateScale(30)
     },
+    chat_circle: {
+        height: moderateScale(44),
+        width: moderateScale(44),
+        borderRadius: moderateScale(20),
+        backgroundColor: '#fff',
+        position: 'absolute',
+        bottom: 60,
+        right: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 15
+    },
+    chat_img: {
+        height: moderateScale(26),
+        width: moderateScale(26),
+        tintColor: 'green'
+    }
 });
 
 export default ViewProfile;

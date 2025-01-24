@@ -35,6 +35,8 @@ const EditPresonalInfo = ({ navigation }) => {
   const [height, setHeight] = useState('')
   const [weight, setWeight] = useState('')
 
+  // console.log('DateDataDateData',DateData);
+  
   const [ImageData, setImageData] = useState([]);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -185,7 +187,7 @@ const EditPresonalInfo = ({ navigation }) => {
   };
 
   const [sectorData, setSectorData] = useState([])
-  console.log('sectorDatasectorDatasectorData================================================',sectorData);
+  // console.log('sectorDatasectorDatasectorData================================================',sectorData);
   
   const [sectorId, setSectorId] = useState(null);
   const [sectorName, setSectorName] = useState(null);
@@ -204,7 +206,7 @@ const EditPresonalInfo = ({ navigation }) => {
   
     HomeService.getUserProfile()
       .then((res) => {
-        console.log('-------------------------------------------------profile-------fatchhhhhh--------------', JSON.stringify(res));
+        // console.log('---------------------------fatchhhhhh--------------', JSON.stringify(res));
         if (res && res.status === true) {
           setUserProfileData(res.data);
           setName(res?.data?.name)
@@ -225,8 +227,6 @@ const EditPresonalInfo = ({ navigation }) => {
 
       })
   }
-
-
 
   useEffect(() => {
     getSectData()
@@ -249,7 +249,8 @@ const EditPresonalInfo = ({ navigation }) => {
   }
 
   useEffect(() => {
-    getMaslakData()
+    getMaslakData(),
+    getCastkData()
   }, [])
 
   const [maslakData, setMaslakData] = useState([])
@@ -274,27 +275,25 @@ const EditPresonalInfo = ({ navigation }) => {
   };
 
 
-  const [castData, setCastData] = useState([
-    {
-      id: 1,
-      name: 'General'
-    },
-    {
-      id: 2,
-      name: 'SC'
-    },
-    {
-      id: 2,
-      name: 'ST'
-    },
-    {
-      id: 4,
-      name: 'OBC'
-    },
-  ])
+  const [castData, setCastData] = useState([])
+  const getCastkData = () => {
+    AuthService.getCastkList()
+      .then((res) => {
+        // console.log('ressectorrrrrrrrrrrrrr', res);
+        if (res && res.status == true) {
+          setCastData(res.data)
+        }
+
+      })
+      .catch((err) => {
+        console.log('secterr', err);
+
+      })
+  }
+
   const [castId, setCastId] = useState(null);
   const handleSelectCast = (item) => {
-    setCastId(item.name);
+    setCastId(item.id);
   };
 
   const [genderData, setGenderData] = useState([
@@ -313,7 +312,7 @@ const EditPresonalInfo = ({ navigation }) => {
     setGenderId(item.name);
   };
 
-  console.log('castttttttttttttttttttttt', ImageData)
+  // console.log('castttttttttttttttttttttt', ImageData)
 
   const getPersonalInfo = () => {
    

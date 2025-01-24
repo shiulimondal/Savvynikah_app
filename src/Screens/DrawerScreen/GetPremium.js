@@ -15,42 +15,51 @@ import PaymentSucess from '../../Components/DrawerCard/PaymentSucess';
 import PhonePePaymentSDK from 'react-native-phonepe-pg'
 import sha256 from 'sha256'
 import Base64 from 'react-native-base64'
+import { CALLBACK_URL } from '../../Utils/HttpClient';
+
 
 const { height, width } = Dimensions.get('screen');
 
 const GetPremium = () => {
     const { userData } = useSelector(state => state.User)
-    console.log('hgggggggggggggggggggg', userData);
+    // console.log('hgggggggggggggggggggg', userData);
     const colors = useTheme();
     const navigation = useNavigation();
     const [selectedPlan, setSelectedPlan] = useState(null);
-    console.log('hgggggggggggggggggggg', selectedPlan);
     const [subPlanList, setSubPlanList] = useState([])
     const [paymentData, setPaymentData] = useState({})
+    const [siteSetting, setSiteSetting] = useState({})
     const [price, setprice] = useState('');
+
+    const [environment, setEnviroment] = useState("PRODUCTION")
+    const [merchantId, setMerchantId] = useState('')
+    const [appId, setAppId] = useState(null)
+    const [enableLogging, setEnableLogging] = useState(true)
+    const [siteSaltKey, setSiteSaltKey] = useState('')
+    const [callbackUrl, setCallbaklUrl] = useState(CALLBACK_URL)
 
     const [loading, setLoading] = useState(true);
     const [btnLoader, setBtnLoader] = useState(false);
     const [isModalShow, setModalShow] = useState(false);
+
     const toggleModal = () => {
         setModalShow(!isModalShow);
     };
 
     const handlePlanSelect = (index) => {
-        console.log('gggggggggggggggggggpriceeeeeeeeeeeeeee', index);
-
         setSelectedPlan(index);
         setprice(index.price)
     };
 
     useEffect(() => {
         getSubscriptionData()
+        getPaymentCredentionalData()
     }, [])
 
     const getSubscriptionData = () => {
         HomeService.getSubscriptionList()
             .then((res) => {
-                console.log('ddddddsssssssssssssssssss00000000000', res);
+                // console.log('ddddddsssssssssssssssssss00000000000', res);
                 if (res && res.status == true) {
                     setSubPlanList(res.data)
                 }
@@ -62,82 +71,101 @@ const GetPremium = () => {
                 setLoading(false);
             });
     };
+    const getPaymentCredentionalData = () => {
+        HomeService.getsitesettings()
+            .then((res) => {
+                // console.log('ddddddsssssssssssssssssss00000000000=======----------------------', res);
+                if (res && res.success == true) {
+                    setSiteSetting(res.data)
+                    setMerchantId(res?.data?.merchant_id)
+                    setSiteSaltKey(res?.data?.salt_key)
+                }
+            })
+            .catch((err) => {
+                // console.log('homeerrr', err);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
 
-    const [environment, setEnviroment] = useState("SANDBOX")
-    const [merchantId, setMerchantId] = useState('PGTESTPAYUAT105')
-    const [appId, setAppId] = useState(null)
-    const [enableLogging, setEnableLogging] = useState(true)
 
     const generateTransactionId = () => {
         const timestamp = Date.now();
         const random = Math.floor(Math.random() * 1000000);
-        const merchantPrefix = "T";
+        const merchantPrefix = "MT";
         return `${merchantPrefix}${timestamp}${random}`
     }
 
-    // UAT Credentials
-    // MID: PGTESTPAYUAT105
-    // Test card details:
-    // Netbanking Credentials
-    // "card_number": "4208 5851 9011 6667", Username: test
-    // Salt Index: 1
-    // Salt Key: c45b52fe-f2c5-4ef6-a6b5-131aa89ed133 "card_type": "CREDIT_CARD",
-    // "card_issuer": "VISA",
-    // "expiry_month": 06,
-    // "expiry_year": 2027,
-    // "cvv": "508"
-    // Bank Page OTP: 123456
-    // Password: test
+    const generateMerchantUserId = () => {
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000000);
+        const merchantPrefix = "MUID";
+        return `${merchantPrefix}${timestamp}${random}`
+    }
 
+
+    const PhonePeEnvironment = {
+        RELEASE: 'RELEASE',
+        SANDBOX: 'SANDBOX',
+    };
 
     const SubmitHandler = () => {
-        PhonePePaymentSDK.init(environment, merchantId, appId, enableLogging)
+        const phonePeEnv = environment === "PRODUCTION"
+            ? PhonePeEnvironment.RELEASE
+            : PhonePeEnvironment.SANDBOX;
+
+        PhonePePaymentSDK.init(phonePeEnv, merchantId, appId, enableLogging)
             .then((res) => {
                 const requestBody = {
                     merchantId: merchantId,
                     merchantTransactionId: generateTransactionId(),
-                    merchantUserId: "",
+                    merchantUserId: generateMerchantUserId(),
                     amount: (price * 100),
                     mobileNumber: userData?.phone,
-                    callbackUrl: "",
+                    callbackUrl: callbackUrl,
                     paymentInstrument: {
                         type: "PAY_PAGE"
                     }
                 };
-
-                const salt_key = "c45b52fe-f2c5-4ef6-a6b5-131aa89ed133";
+                const salt_key = siteSaltKey;
                 const salt_Index = 1;
                 const payload = JSON.stringify(requestBody);
                 const payload_main = Base64.encode(payload);
+                // console.log('Encoded Payload:', payload_main);
+                // console.log('Encoded Payload:', requestBody);
+
                 const string = payload_main + "/pg/v1/pay" + salt_key;
+                // console.log('Checksum String:', string);
                 const checksum = sha256(string) + "###" + salt_Index;
+
+                // console.log('Generated Checksum:', checksum);
 
                 PhonePePaymentSDK.startTransaction(payload_main, checksum, null, null)
                     .then((paymentRes) => {
-                        console.log('Payment Response:===================================', paymentRes);
-                        // Only call submitPayment if payment is successful
-                        // {"status": "SUCCESS"}
+                        // console.log('Payment Response:', paymentRes);
                         if (paymentRes.status === "SUCCESS") {
-                            // Generate unique UUID
                             const uniquePaymentId = uuid.v4();
-                            console.log('Generated UUID================================:', uniquePaymentId);
-                            // Pass the UUID to submitPayment
+                            // console.log('Generated UUID:', uniquePaymentId);
                             submitPayment(uniquePaymentId);
                         } else {
-                            // Handle failure case
-                            console.log('Payment failed or status is not SUCCESS', paymentRes.status);
+                            // console.log('Payment failed:', paymentRes.status);
+                            // console.log('Payment Response Details:', paymentRes);
                             Toast.show('Server Error. Please try again Later.', Toast.BOTTOM);
                         }
                     })
                     .catch((err) => {
-                        console.log('Payment error', err);
+                        // console.log('Payment Error:', err);
+                        // console.log('Payment Error:', JSON.stringify(err));
                         Toast.show('An error occurred during payment. Please try again.', Toast.BOTTOM);
                     });
             })
             .catch((err) => {
-                console.log('PhonePe SDK init error', err);
+                console.log('PhonePe SDK Initialization Error:', err);
             });
     };
+
+
 
     const submitPayment = ((uniquePaymentId) => {
         let data = {
@@ -146,11 +174,11 @@ const GetPremium = () => {
             "order_id": uniquePaymentId
         }
         // setBtnLoader(true)
-        console.log('submittttttttttttttttttttttttttt=======================', data);
+        // console.log('submittttttttttttttttttttttttttt=======================', data);
 
         HomeService.getSubmitPayment(data)
             .then((res) => {
-                console.log('paymentttttttttttttttttttttttttttttttttttt====================', res);
+                // console.log('paymentttttttttttttttttttttttttttttttttttt====================', res);
                 if (res && res.status == true) {
                     setBtnLoader(false)
                     setModalShow(true);
@@ -160,16 +188,16 @@ const GetPremium = () => {
                         NavigationService.navigate('Home')
                     }, 3000);
                     setBtnLoader(false);
-                } else if(res && res.status == false) {
+                } else if (res && res.status == false) {
                     setBtnLoader(false)
                     Toast.show(res.message);
                     setTimeout(() => {
                         NavigationService.navigate('Home')
                     }, 3000);
                 }
-                else{
+                else {
                     setBtnLoader(false)
-                    Toast.show(res.message); 
+                    Toast.show(res.message);
                 }
             })
             .catch((err) => {
@@ -177,9 +205,6 @@ const GetPremium = () => {
                 setBtnLoader(false)
             })
     })
-
-
-
 
     return (
         <View style={styles.container}>

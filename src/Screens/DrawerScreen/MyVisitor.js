@@ -7,6 +7,7 @@ import HomeService from '../../Services/HomeServises';
 import { moderateScale } from '../../Constants/PixelRatio';
 import { FONTS } from '../../Constants/Fonts';
 import { useTheme } from 'react-native-basic-elements';
+import ShimmerLoader from '../../ui/ShimmerLoader';
 
 
 // create a component
@@ -40,7 +41,14 @@ const MyVisitor = () => {
             <View>
                 {loading ? (
                     <View style={styles.loaderContainer}>
-                        <ActivityIndicator size="large" color="green" />
+                       <FlatList
+                        data={[1,1,1,1,1,1,1,1,1,1,1,1,,1,1,1,1,1]}
+                        renderItem={({ item, index }) => (
+                            <ShimmerLoader   />
+                        )}
+                        keyExtractor={(item, index) => index.toString()}
+                        showsVerticalScrollIndicator={false}
+                    />
                     </View>
                 ) : (
                     <View>

@@ -6,14 +6,7 @@ const SingleSelectPicker = ({ data, placeholder, onSelectItem, defaultSelected }
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(defaultSelected || null);
 
-  // Debug: Check data received by component
   useEffect(() => {
-    console.log('Data received for picker:', data);
-  }, [data]);
-
-  // Set the default selected item if defaultSelected changes
-  useEffect(() => {
-    console.log('Default selected item:', defaultSelected);
     if (defaultSelected) {
       setSelectedItem(defaultSelected);
     }

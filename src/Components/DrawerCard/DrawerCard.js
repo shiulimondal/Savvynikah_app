@@ -1,4 +1,4 @@
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { moderateScale } from '../../Constants/PixelRatio';
@@ -11,14 +11,16 @@ import AuthService from '../../Services/Auth';
 import { logout } from '../../Redux/reducer/User';
 import Toast from "react-native-simple-toast";
 import HomeService from '../../Services/HomeServises';
-
+import Modal from 'react-native-modal';
 
 const DrawerCard = () => {
     const colors = useTheme();
     const dispatch = useDispatch();
     const { userData } = useSelector(state => state.User)
-    const [userProfileData, setUserProfileData] = useState([])    
-    
+    const [userProfileData, setUserProfileData] = useState([])
+
+    const [isModalVisible, setModalVisible] = useState(false);
+
 
     const drawerScreen = [
         {
@@ -56,20 +58,67 @@ const DrawerCard = () => {
             title: 'My Wishlist',
             handleClick: 'MyWishlist'
         },
-        // {
-        //     img: require('../../assets/images/logout.png'),
-        //     title: 'Sign Out',
-        //     handleClick: logoutUser()
-        // },
+        {
+            img: require('../../assets/images/support.png'),
+            title: 'Contact Support ',
+            handleClick: 'Support'
+        },
+        {
+            img: require('../../assets/images/delete-icn.png'),
+            title: 'Delete Account',
+            handleClick: () => setModalVisible(true),
+        },
     ];
 
     const handleDrawerScreen = (item) => {
-        if (item) {
-            NavigationService.openDrawer()
-            NavigationService.navigate(item.handleClick);
-            NavigationService.closeDrawer()
+        if (!item?.handleClick) {
+            console.warn(`${item.title} has no associated action.`);
+            return;
         }
-    }
+        if (typeof item.handleClick === 'string') {
+            if (item.handleClick === 'deleteAccount') {
+                setModalVisible(true)
+            } else {
+                NavigationService.navigate(item.handleClick)
+            }
+        } else if (typeof item.handleClick === 'function') {
+            item.handleClick()
+        }
+    };
+
+    // const handleDrawerScreen = (item) => {
+    //     if (item) {
+    //         NavigationService.openDrawer()
+    //         NavigationService.navigate(item.handleClick);
+    //         NavigationService.closeDrawer()
+    //     }
+    // }
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const getDeleteProfile = () => {
+        setIsLoading(true)
+        HomeService.setDeleteUser()
+            .then((res) => {
+                console.log('Response:=====================================', res)
+                if (res && res.status === true) {
+                    setModalVisible(false);
+                    AuthService.setToken(null)
+                    AuthService.setAccount(null);
+                    NavigationService.navigate('Login')
+                    dispatch(logout())
+                }
+            })
+            .catch((err) => {
+                console.log('Error:===================serrrrr', err);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    };
+
+
+
 
     const logoutUser = () => {
         Toast.show('Logged Out Successfully ', Toast.SHORT);
@@ -79,7 +128,7 @@ const DrawerCard = () => {
         dispatch(logout());
     };
 
-   
+
     useEffect(() => {
         geUserFullProfile()
     }, [])
@@ -98,7 +147,9 @@ const DrawerCard = () => {
             })
     }
 
-  
+
+
+
 
     return (
         <View style={styles.container_sty}>
@@ -145,6 +196,43 @@ const DrawerCard = () => {
                 </TouchableOpacity>
 
             </ScrollView>
+
+
+            <Modal
+                isVisible={isModalVisible}
+                backdropOpacity={0.8}
+                style={{
+                    margin: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <View style={styles.modalView}>
+                    <Icon type='AntDesign' name='close' size={20} color={'#000'} style={{ alignSelf: 'flex-end' }}
+                        onPress={() => setModalVisible(false)} />
+                    <Image source={require('../../assets/images/sdelete.png')} style={styles.del_img} />
+                    <Text style={{ ...styles.conf_txt, color: colors.secondaryFontColor }}>Are you sure , Do you want to delete your account !</Text>
+
+                    <View style={styles.button_view}>
+
+                        <TouchableOpacity
+                            onPress={() => setModalVisible(false)}
+                            style={{ ...styles.button_sty, backgroundColor: colors.buttonColor }}>
+                            <Text style={{ ...styles.signin_txt, color: colors.secondaryThemeColor }}>No</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => getDeleteProfile()}
+                            style={{ ...styles.button_sty, backgroundColor: colors.buttonColor }}>
+                            {isLoading ? (
+                                <ActivityIndicator size="small" color={colors.secondaryThemeColor} />
+                            ) : (
+                                <Text style={{ ...styles.signin_txt, color: colors.secondaryThemeColor }}>Yes</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
 
         </View>
@@ -217,6 +305,44 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.Inter.semibold,
         fontSize: moderateScale(12),
         color: Colors.secondaryFont
+    },
+    modalView: {
+        height: '45%',
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: moderateScale(10),
+        padding: moderateScale(15)
+    },
+    del_img: {
+        height: moderateScale(90),
+        width: moderateScale(90),
+        marginTop: moderateScale(20),
+        alignSelf: 'center'
+    },
+    conf_txt: {
+        fontFamily: FONTS.Inter.semibold,
+        fontSize: moderateScale(15),
+        marginTop: moderateScale(15),
+        textAlign: 'center'
+    },
+    button_view: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingBottom: moderateScale(20),
+        marginTop: moderateScale(50),
+        paddingHorizontal: moderateScale(20)
+    },
+    button_sty: {
+        width: moderateScale(90),
+        height: moderateScale(40),
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: moderateScale(7),
+    },
+    signin_txt: {
+        textAlign: 'center',
+        fontSize: moderateScale(13),
+        fontFamily: FONTS.Inter.semibold
     },
 });
 

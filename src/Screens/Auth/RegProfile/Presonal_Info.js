@@ -21,12 +21,12 @@ import SingleSelectPicker from '../../../ui/SingleSelectPicker';
 const Presonal_Info = ({ navigation }) => {
   const route = useRoute()
   const getSignupData = route.params.signupData
-  console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111', getSignupData);
+  // console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111', getSignupData);
 
   const colors = useTheme();
   const [DateData, setDateData] = useState('');
   const [getAge, setGetAge] = useState('');
-  const [AgeData, setAgeData] = useState('');
+  const [AgeData, setAgeData] = useState(null);
   const [name, setName] = useState('')
   const [dob, setDob] = useState('')
   const [height, setHeight] = useState('')
@@ -36,6 +36,11 @@ const Presonal_Info = ({ navigation }) => {
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
+
+  const [isModalage, setModalage] = useState(false);
+
+
+  
 
   useEffect(() => {
     if (getSignupData?.data?.name) {
@@ -101,19 +106,41 @@ const Presonal_Info = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (getAge) {
+    if (getAge) {    
       const age = calculateAge(getAge);
       setAgeData(age);
     } else {
-      console.warn('Birth date is not defined.');
+      // console.warn('Birth date is not defined.');
     }
   }, [getAge]);
+
+
+  useEffect(() => {
+    if (getAge) {
+      const age = calculateAge(getAge);
+      setAgeData(age);
+
+      // Show modal if age is less than 18
+      if (age < 18) {
+        setModalage(true);
+
+        // Automatically hide modal after 4 seconds
+        const timer = setTimeout(() => {
+          setModalage(false);
+        }, 4000);
+
+        // Cleanup the timer when the component unmounts or re-renders
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [getAge]);
+
 
   function calculateAge(birthDate) {
     const today = new Date();
     const birth = new Date(birthDate);
     if (isNaN(birth.getTime())) {
-      console.error('Invalid birth date:', birthDate);
+      console.log('Invalid birth date:', birthDate);
       return NaN;
     }
 
@@ -212,7 +239,8 @@ const Presonal_Info = ({ navigation }) => {
   }
 
   useEffect(() => {
-    getMaslakData()
+    getMaslakData(),
+    getCastkData()
   }, [])
 
   const [maslakData, setMaslakData] = useState([])
@@ -236,28 +264,26 @@ const Presonal_Info = ({ navigation }) => {
     setMaslakId(item.id);
   };
 
+  const getCastkData = () => {
+    AuthService.getCastkList()
+      .then((res) => {
+        // console.log('ressectorrrrrrrrrrrrrr', res);
+        if (res && res.status == true) {
+          setCastData(res.data)
+        }
 
-  const [castData, setCastData] = useState([
-    {
-      id: 1,
-      name: 'General'
-    },
-    {
-      id: 2,
-      name: 'SC'
-    },
-    {
-      id: 2,
-      name: 'ST'
-    },
-    {
-      id: 4,
-      name: 'OBC'
-    },
-  ])
+      })
+      .catch((err) => {
+        console.log('secterr', err);
+
+      })
+  }
+
+  const [castData, setCastData] = useState([])
+
   const [castId, setCastId] = useState(null);
   const handleSelectCast = (item) => {
-    setCastId(item.name);
+    setCastId(item.id);
   };
 
   const [genderData, setGenderData] = useState([
@@ -325,11 +351,7 @@ const Presonal_Info = ({ navigation }) => {
       hasError = true;
       return false;
     }
-    if (maslakId === '') {
-      Toast.show('Please Select MaslakId');
-      hasError = true;
-      return false;
-    }
+  
 
     if (hasError) return;
     let data = {
@@ -428,6 +450,7 @@ const Presonal_Info = ({ navigation }) => {
                 <DateTimePickerModal
                   isVisible={isDatePickerVisible}
                   mode="date"
+                  maximumDate={new Date()}
                   onConfirm={val => {
                     DatehandleConfirm(val);
                     setDateData(val);
@@ -507,11 +530,7 @@ const Presonal_Info = ({ navigation }) => {
               gradientColors={['rgba(30,68,28,255)', 'rgba(2,142,0,255)']}
               onPress={() => getPersonalInfo()}
             />
-
           </View>
-
-
-
         </View>
 
       </ScrollView>
@@ -562,6 +581,21 @@ const Presonal_Info = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </Modal>
+
+      <Modal
+        visible={isModalage}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalage(false)}
+      >
+        <View style={styles.modalContainerage}>
+          <View style={styles.modalContentage}>
+            <Text style={styles.modalTextage}>
+            Available for users aged 18 or older. Please update your date of birth.
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -570,6 +604,27 @@ const Presonal_Info = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  modalContainerage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContentage: {
+    width: '100%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation:10
+  },
+  modalTextage: {
+    fontSize: 15,
+    marginBottom: 20,
+    textAlign: 'center',
+    color:'rgba(30,68,28,255)',
+    fontFamily:FONTS.Poppins.medium
   },
   labelContainer: {
     alignItems: 'center',

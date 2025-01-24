@@ -27,7 +27,7 @@ const EditOtherInfo = ({ navigation }) => {
     const colors = useTheme();
     const route = useRoute()
     const getOtherInfo = route.params.OtherInfoData
-    console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++++++++++++', getOtherInfo);
+    // console.log('getdatddddddddddddddddddddddddddddddd8888888884111111111+++++++++++++++++++++++++', getOtherInfo);
     const [address, setAddress] = useState('');
     const [pinCode, setPinCode] = useState('');
     const [hobby, setHobby] = useState('');

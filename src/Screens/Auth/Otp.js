@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, PermissionsAndroid } from 'react-native';
 import Header from '../../Components/Header/Header';
 import { FONTS } from '../../Constants/Fonts';
 import { moderateScale } from '../../Constants/PixelRatio';
@@ -13,7 +13,6 @@ import NavigationService from '../../Services/Navigation';
 import { setuser } from '../../Redux/reducer/User';
 import { useDispatch } from 'react-redux';
 
-
 // create a component
 const Otp = ({ navigation }) => {
     const dispatch = useDispatch()
@@ -25,6 +24,8 @@ const Otp = ({ navigation }) => {
     const [canResend, setCanResend] = useState(false);
     const [emailOtp, setEmailOtp] = useState('')
     const timerRef = useRef();
+
+  
 
     useEffect(() => {
         startTimer();
@@ -59,6 +60,8 @@ const Otp = ({ navigation }) => {
     //         });
     // };
 
+
+
     const resendOtp = () => {
         let data = { "phone":  emailID };
         AuthService.getVerifyResendOTP(data)
@@ -70,7 +73,7 @@ const Otp = ({ navigation }) => {
             .catch((err) => {
                 Toast.show('Error in resending OTP!');
             });
-    };
+    }; 
 
     const getEmailVerify = (() => {
         let data = {

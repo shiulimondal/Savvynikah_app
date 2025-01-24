@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { moderateScale } from '../../Constants/PixelRatio';
 import { AppButton, Icon, useTheme } from 'react-native-basic-elements';
 import { FONTS } from '../../Constants/Fonts';
@@ -9,23 +9,27 @@ import HomeService from '../../Services/HomeServises';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileListCard = ({ item, index }) => {
-  // console.log('singggggggggggggggggggggggggggggggggggggggggggggprofileeeeeeeeeeeeee',item);
+  // console.log('singggggggggggggggggggggggggggggggggggggggggggggprofileeeeeeeeeeeeee===========', item);
   const colors = useTheme();
   const [isInWishlist, setIsInWishlist] = useState(item.flag === 1);
+  const [isInWishlistOff, setIsInWishlistOff] = useState(item.flag === 0);
 
   useEffect(() => {
     setIsInWishlist(item.flag === 1);
   }, [item.flag]);
-  
+  useEffect(() => {
+    setIsInWishlistOff(item.flag === 0);
+  }, [item.flag]);
 
-  const toggleWishList = () => {
-    const data = { "user_id": item.id };
-  
+
+  const toggleWishList = (addRemoveId) => {
+    const data = { "user_id": addRemoveId };
     if (isInWishlist) {
       HomeService.getRemoveWislit(data)
         .then((res) => {
           console.log('Removed from wishlist', res);
-          setIsInWishlist(false); 
+          setIsInWishlist(false);
+          setIsInWishlistOff(true)
         })
         .catch((err) => {
           console.log('Error removing from wishlist', err);
@@ -34,7 +38,8 @@ const ProfileListCard = ({ item, index }) => {
       HomeService.getAddWislit(data)
         .then((res) => {
           console.log('Added to wishlist', res);
-          setIsInWishlist(true); 
+          setIsInWishlist(true);
+          setIsInWishlistOff(false)
         })
         .catch((err) => {
           console.log('Error adding to wishlist', err);
@@ -42,7 +47,7 @@ const ProfileListCard = ({ item, index }) => {
     }
   };
 
-  
+
   return (
     <View key={index} style={{ ...styles.container, backgroundColor: colors.primaryFontColor }}>
       <View style={{
@@ -50,14 +55,31 @@ const ProfileListCard = ({ item, index }) => {
         right: moderateScale(8),
         top: moderateScale(7)
       }}>
+        <TouchableOpacity onPress={() => toggleWishList(item.id)} >
+          {
+            isInWishlist ?
+              <Icon
+                name={'heart'}
+                type='AntDesign'
+                color={'red'}
+                size={12}
 
-        <Icon
-          name={isInWishlist ? 'heart' : 'hearto'} 
-          type='AntDesign'
-          color={'red'}
-          size={12}
-          onPress={toggleWishList} 
-        />
+              />
+              :
+              isInWishlistOff ?
+                <Icon
+                  name={'hearto'}
+                  type='AntDesign'
+                  color={'red'}
+                  size={12}
+
+                />
+                :
+                null
+          }
+
+        </TouchableOpacity>
+
 
       </View>
 

@@ -10,12 +10,18 @@ import AuthService from '../../Services/Auth';
 import { useRoute } from '@react-navigation/native';
 import Toast from "react-native-simple-toast";
 import NavigationService from '../../Services/Navigation';
+import { onForegroundEvent, onNotification, onOpenNotification } from '../../Services/Notification/NotifeeService';
+import notifee, { EventType } from '@notifee/react-native';
+import { fcmService } from '../../Services/Notification/FCMservice';
+import { useDispatch } from 'react-redux';
+import { setuser } from '../../Redux/reducer/User';
 
 
 // create a component
 const EmailVerify = ({ navigation }) => {
     const colors = useTheme()
     const route = useRoute()
+    const dispatch = useDispatch()
     const RegAllData = route.params.regData
     // console.log('reddddddddddddddddddddddddddddddd', RegAllData);
     const [btnLoader, setBtnLoader] = useState(false);
@@ -23,6 +29,44 @@ const EmailVerify = ({ navigation }) => {
     const [canResend, setCanResend] = useState(false);
     const [emailOtp, setEmailOtp] = useState('')
     const timerRef = useRef();
+    const [dToken, setDToken] = useState('')
+    const [activeUser, setActiveUser] = useState('');
+
+
+    useEffect(() => {
+        checkUser();
+        fcmService.registerAppWithFCM();
+        fcmService.register(onRegister, onNotification, onOpenNotification);
+        notifee.requestPermission();
+        notifee.onForegroundEvent(onForegroundEvent);
+        notifee.onBackgroundEvent(async ({ type, detail }) => {
+            const { notification } = detail;
+            if (type == EventType.PRESS) {
+                await notifee.cancelNotification(notification.id);
+            }
+        });
+
+        return () => {
+            // Clean up FCM service or other listeners if needed
+        };
+    }, []);
+    const checkUser = async () => {
+        try {
+          const result = await AuthService.getAccount();
+          setActiveUser(result);
+          console.log('lololololo----------------------=====', result);
+          if (result) {
+            dispatch(setuser(result));
+          }
+        } catch (error) {
+          console.error('Error checking user:', error);
+        }
+      };
+
+    function onRegister(Dvtoken) {
+        console.log("Notification token=======================================", Dvtoken);
+        setDToken(Dvtoken)
+    }
 
     useEffect(() => {
         startTimer();
@@ -48,18 +92,19 @@ const EmailVerify = ({ navigation }) => {
 
     const getEmailVerify = () => {
         const data = {
-            phone: RegAllData?.phone,
-            otp: emailOtp
+            "phone": RegAllData?.phone,
+            "otp": emailOtp,
+            "device_token": dToken
         };
         console.log('Sending OTP data:', data);
-    
+
         setBtnLoader(true);
-    
+
         AuthService.getEmailOTP(data)
             .then((res) => {
                 console.log('Verification response:', res);
                 setBtnLoader(false);
-    
+
                 if (res && res.status === true) {
                     Toast.show(res.message);
                     AuthService.setToken(res.token);
@@ -74,10 +119,10 @@ const EmailVerify = ({ navigation }) => {
                 setBtnLoader(false);
             });
     };
-    
+
 
     const resendOtp = () => {
-        let data = { "phone":  RegAllData?.phone };
+        let data = { "phone": RegAllData?.phone };
         AuthService.getVerifyResendOTP(data)
             .then((res) => {
                 Toast.show('OTP resent successfully!');
@@ -126,15 +171,15 @@ const EmailVerify = ({ navigation }) => {
             ) : (
                 <AppButton
                     textStyle={styles.buttn_txt}
-                    style={{...styles.button_sty,backgroundColor:'gray'}}
+                    style={{ ...styles.button_sty, backgroundColor: 'gray' }}
                     title="Continue"
-                   
+
                 />
             )}
 
             {canResend ? (
                 <Text style={{ ...styles.resend_txt, color: colors.second_txt }}
-                onPress={resendOtp}
+                    onPress={resendOtp}
                 >
                     Resend OTP
                 </Text>

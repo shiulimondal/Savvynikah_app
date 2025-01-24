@@ -32,10 +32,10 @@ const PreferencesCard = ({userProfileData}) => {
                 <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Hobby</Text>
                 <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.hobby}</Text>
             </View>
-            <View style={styles.name_view}>
+            {/* <View style={styles.name_view}>
                 <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Habbit</Text>
                 <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.habits}</Text>
-            </View>
+            </View> */}
 
          
         </View>

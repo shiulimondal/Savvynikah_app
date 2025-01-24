@@ -7,7 +7,7 @@ import { FONTS } from '../../Constants/Fonts';
 import NavigationService from '../../Services/Navigation';
 
 
-const ChatHeader = ({ route }) => {
+const ChatHeader = ({ route ,title}) => {
     return (
         <View style={styles.main_view}>
             <StatusBar
@@ -20,7 +20,7 @@ const ChatHeader = ({ route }) => {
                     <Icon name="arrowleft" type="AntDesign" />
                 </TouchableOpacity>
 
-                <Text style={styles.header_txt}>Chat</Text>
+                <Text style={styles.header_txt}>{title}</Text>
                 <Icon name="bell" type="Feather"  color={Colors.buttonColor}/>
             </View>
         </View>

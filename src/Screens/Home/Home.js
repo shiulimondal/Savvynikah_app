@@ -1,5 +1,5 @@
 //import liraries
-import React, { Component, useEffect, useRef, useState } from 'react';
+import React, { Component, useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, Pressable, Animated, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import HomeHeader from '../../Components/Header/HomeHeader';
 import { Image } from 'react-native';
@@ -12,6 +12,8 @@ import Modal from "react-native-modal";
 import FilterCard from '../../Components/HomeCard/FilterCard';
 import { useSelector } from 'react-redux';
 import HomeService from '../../Services/HomeServises';
+import { useFocusEffect } from '@react-navigation/native';
+import ShimmerLoader from '../../ui/ShimmerLoader';
 
 const { height, width } = Dimensions.get('screen')
 const Home = () => {
@@ -31,14 +33,14 @@ const Home = () => {
             useNativeDriver: true,
         }).start();
     };
-
-    useEffect(() => {
-        getUsetData()
-    }, [])
+  
+    // useEffect(() => {
+    //     getUsetData()
+    // }, [ProfileListData])
 
     const [filterData, setFilterData] = useState(null);
     const [ProfileListData, setProfileListData] = useState([]);
-    console.log('profffffffffffffffffffffffffffffff', ProfileListData);
+    // console.log('profffffffffffffffffffffffffffffff', ProfileListData);
 
 
     const handleFilterData = (data) => {
@@ -46,7 +48,9 @@ const Home = () => {
         setModalVisible(false);
     };
 
-    const getUsetData = (() => {
+   
+
+    const getUsetData = useCallback(async () => {
         let data = {
             "gender": filterData?.gender ?? null,
             "marital_status": filterData?.marital_status ?? null,
@@ -58,11 +62,11 @@ const Home = () => {
             "max_age": filterData?.max_age ?? null,
             "caste": filterData?.caste ?? null
         };
-        console.log('filllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll+++++++++++++++++++++++++++', data);
+        // console.log('filllllllllllllllllllllllll++++++++++++++++', data);
 
         HomeService.getuserListNdFilterData(data)
             .then((res) => {
-                console.log('gettttttttttttttttttttttttttttttttttttttttttttttt0000000000000000000000000ttttt', JSON.stringify(res));
+                // console.log('getttttttttttttttttttt000ttttt', JSON.stringify(res));
                 if (res && res.success == true) {
                     setProfileListData(res.data)
                 }
@@ -74,14 +78,18 @@ const Home = () => {
             .finally(() => {
                 setLoading(false);
             });
-    })
+      }, []);
 
 
+    useFocusEffect(
+        useCallback(() => {
+          getUsetData()
+        }, [getUsetData])
+      );
 
 
     return (
         <View style={styles.container}>
-        {/* <HomeHeader /> */}
         <ImageBackground
             source={require('../../assets/images/homeBannerBack.jpg')}
             style={styles.Homebanner_img}>
@@ -99,7 +107,14 @@ const Home = () => {
     
             {loading ? (
                 <View style={styles.loaderContainer}>
-                    <ActivityIndicator size="large" color="#fff" />
+                  <FlatList
+                        data={[1,1,1,1,1,1,1,1,1,1,1,1,,1,1,1,1,1]}
+                        renderItem={({ item, index }) => (
+                            <ShimmerLoader   />
+                        )}
+                        keyExtractor={(item, index) => index.toString()}
+                        showsVerticalScrollIndicator={false}
+                    />
                 </View>
             ) : (
                 <View style={{ flex: 1,backgroundColor:'#fff' }}>
@@ -213,9 +228,8 @@ const styles = StyleSheet.create({
     },
     loaderContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: moderateScale(30)
+        backgroundColor:'#fff' ,
+        paddingHorizontal:moderateScale(15)
     },
     noDataView: {
         justifyContent: 'center',

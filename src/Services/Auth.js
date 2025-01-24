@@ -50,6 +50,9 @@ const getCityList = async (data) => {
 const getMaslakList = async () => {
     return HttpClient.post('/maslaks');
 }
+const getCastkList = async () => {
+    return HttpClient.post('/castes');
+}
 const getUpdateRegProfile = async (data) => {
     return HttpClient.post('/update-profile', data);
 }
@@ -64,6 +67,15 @@ const getForgotPasswordOTP = async (data) => {
 }
 const getREsetForgotPassword = async (data) => {
     return HttpClient.post('/reset-password', data);
+}
+const getDeviceToken = async (data) => {
+    return HttpClient.post('/update-device-token', data);
+}
+const getTermsData = async () => {
+    return HttpClient.post('/terms-and-conditions');
+}
+const getPolicyData = async () => {
+    return HttpClient.post('/privacy-policy');
 }
 
 const AuthService = {
@@ -87,7 +99,11 @@ const AuthService = {
     getForgotPasswordEmail,
     getVerifyResendOTP,
     getForgotPasswordOTP,
-    getREsetForgotPassword
+    getREsetForgotPassword,
+    getDeviceToken,
+    getCastkList,
+    getTermsData,
+    getPolicyData
 }
 
 export default AuthService;

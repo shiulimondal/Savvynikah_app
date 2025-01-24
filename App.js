@@ -11,10 +11,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setuser } from './src/Redux/reducer/User';
 import AuthService from './src/Services/Auth';
 import { firebase } from '@react-native-firebase/app';
-import { firebaseConfig } from './src/Config'; 
+import { firebaseConfig } from './src/Config';
 
 if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);  
+  firebase.initializeApp(firebaseConfig);
 } else {
   firebase.app();
 }
@@ -27,7 +27,7 @@ const App = () => {
   const { login_status } = useSelector(state => state.User);
   console.log('login------------------------', login_status);
   const [activeUser, setActiveUser] = useState('');
-  
+
   useEffect(() => {
     checkUser();
   }, []);
@@ -36,7 +36,7 @@ const App = () => {
     try {
       const result = await AuthService.getAccount();
       setActiveUser(result);
-      console.log('lololololo----------------------=====', result);  
+      console.log('lololololo----------------------=====', result);
       if (result) {
         dispatch(setuser(result));
       }
@@ -44,6 +44,8 @@ const App = () => {
       console.error('Error checking user:', error);
     }
   };
+
+
 
   return (
     <SafeAreaProvider>
@@ -74,7 +76,7 @@ const App = () => {
               second_txt: 'rgba(2,142,0,255)',
               light_txt: '#4D4D4D',
               chatScreen: '#EEEEEE',
-              senderView: '#D8FFD8',
+              senderView: 'rgba(2,142,0,0.2)',
               tabcolor: '#F2F2F2'
             },
             dark: {
@@ -97,7 +99,7 @@ const App = () => {
               second_txt: 'rgba(2,142,0,255)',
               light_txt: '#4D4D4D',
               chatScreen: '#EEEEEE',
-              senderView: '#D8FFD8',
+              senderView: 'rgba(2,142,0,0.2)',
               tabcolor: '#F2F2F2'
             },
           }}

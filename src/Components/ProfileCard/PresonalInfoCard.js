@@ -7,7 +7,7 @@ import { useTheme } from 'react-native-basic-elements';
 const { height, width } = Dimensions.get('screen');
 const PresonalInfoCard = ({ userProfileData }) => {
 
-    console.log('userrrrrrrrrrrrrrrrrrr00000000000000000000000000rrrrrrrrrrrrrrr',userProfileData);
+    // console.log('userrrrrrrrrrrrrrrrrrr00000000000000000000000000rrrrrrrrrrrrrrr',userProfileData);
     
     const colors = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);

@@ -31,10 +31,10 @@ const ForgotEmail = ({ navigation }) => {
           "phone": email,
       };
       setBtnLoader(true);
-      console.log('resssssssssssdataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data);
+      // console.log('resssssssssssdataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', data);
       AuthService.getForgotPasswordEmail(data)
           .then((res) => {
-            console.log('mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx============',res);
+            // console.log('mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx============',res);
               if (res && res.success == true) {
                   setBtnLoader(false);
                   Toast.show('An OTP has been sent to your verified email address.')
@@ -45,7 +45,7 @@ const ForgotEmail = ({ navigation }) => {
               }
           })
           .catch((err) => {
-              console.log('emailverify==========================', err);
+              // console.log('emailverify==========================', err);
               setBtnLoader(false);
           });
 

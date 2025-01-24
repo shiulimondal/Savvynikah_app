@@ -2,8 +2,9 @@ import AuthService from '../Services/Auth';
 import MainStorage from '../Utils/MainStorage';
 import { MAIN_BASE_URL } from './EnvVariables';
 
-const BASE_URL = `https://savvynikah.acuitysoftware.co.in/api`;
-const MAINIMAGEURL = "https://savvynikah.acuitysoftware.co.in/api";
+const BASE_URL = `https://savvynikah.com/api`;
+const MAINIMAGEURL = "https://savvynikah.com/api";
+export const CALLBACK_URL = `${BASE_URL}/subscription-payment-callback`;
 
 function get(endpoint, params) {
     return request(endpoint, params);
@@ -20,6 +21,8 @@ function put(endpoint, params) {
 function Delete(endpoint, params) {
     return request(endpoint, params, "DELETE");
 }
+
+
 
 async function request(endpoint, params = null, method = 'GET') {
     let token = await AuthService.getToken();
@@ -130,7 +133,7 @@ async function uploadFile(endpoint, files, additionalData = {}, tokenCustom = nu
         data.append('images[]', {
             uri: file.uri,
             type: file.type,
-            name: file.fileName, 
+            name: file.fileName,
         });
     });
 
@@ -158,18 +161,13 @@ async function uploadFile(endpoint, files, additionalData = {}, tokenCustom = nu
 }
 
 
-
-
-
-
-
 const HttpClient = {
     get,
     post,
     put,
     Delete,
     upload,
-    uploadFile
+    uploadFile,
 };
 
 export default HttpClient;
