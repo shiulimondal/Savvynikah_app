@@ -4,16 +4,14 @@ import { View, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
 import Header from '../../../Components/Header/Header';
 import { AppButton, AppTextInput, Icon, Picker, useTheme, Text } from 'react-native-basic-elements';
 import { FONTS } from '../../../Constants/Fonts';
-// import {  } from '../../../Constants/PixelRatio';
 import StepIndicator from 'react-native-step-indicator';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import MultiSelectPicker from '../../../ui/MultiSelectPicker';
-import SingleSelectPicker from '../../../ui/SingleSelectPicker';
 import NavigationService from '../../../Services/Navigation';
 import { useRoute } from '@react-navigation/native';
 import AuthService from '../../../Services/Auth';
-import SinglePicker from '../../../ui/SinglePicker';
 import Toast from "react-native-simple-toast";
+import RNPickerSelect from 'react-native-picker-select';
+import { MultiSelect } from 'react-native-element-dropdown';
 
 const { height, width } = Dimensions.get('screen')
 // create a component
@@ -60,111 +58,118 @@ const Professional_Info = ({ navigation }) => {
     setCurrentPage(position);
   };
 
-  useEffect(() => {
-    getEducationData()
-  }, [])
+  const [educationData, setEducationData] = useState([]);
+  const [educationId, setEducationId] = useState(null);
 
   useEffect(() => {
-    getLanguageData(),
-      getOcupationData()
-  }, [])
-
-  useEffect(() => {
-    getOcupationData()
-  }, [])
-
-  useEffect(() => {
-    getStatusData()
-  }, [])
-
-
-  const [Educationdata, setEducationData] = useState([])
-  const [educationId, setEducatonId] = useState(null);
-
+    getEducationData();
+  }, []);
 
   const getEducationData = () => {
     AuthService.getEducationList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr====================', res);
-        if (res && res.status == true) {
-          setEducationData(res.data)
+        if (res && res.status === true) {
+          setEducationData(res.data);
         }
       })
       .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const handleSelectEducation = (item) => {
-    setEducatonId(item.id);
+        console.log('Error fetching education data:', err);
+      });
   };
 
-  const [Languagedata, setLanguageData] = useState([])
-  const [LanguageId, setLanguageId] = useState([]);
+  const handleSelectEducation = (id) => {
+    setEducationId(id);
+  };
+
+  const pickerEducationItems = educationData.map((item) => ({
+    label: item.name,
+    value: item.id,
+  }));
+
+
+
+
+
+  const [languageData, setLanguageData] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
+
+  useEffect(() => {
+    getLanguageData();
+  }, []);
 
   const getLanguageData = () => {
     AuthService.getLanguagesList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr====================', res);
-        if (res && res.status == true) {
-          setLanguageData(res.data)
+        if (res && res.status === true) {
+          const formattedData = res.data.map(item => ({
+            label: item.name, // Display Name
+            value: item.id    // Unique ID
+          }));
+          setLanguageData(formattedData);
         }
       })
-      .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const handleSelectLanguages = (id) => {
-    setLanguageId(id)
+      .catch((err) => console.log('Error fetching languages:', err));
   };
 
- const [Ocupationdata, setOcupationData] = useState([])
-  const [OcupationId, setOcupationId] = useState(null);
+  const handleSelectLanguages = (selectedItems) => {
+    setSelectedLanguages(selectedItems);
+  };
 
+  const [occupationData, setOccupationData] = useState([]);
+  const [occupationId, setOccupationId] = useState(null);
 
+  // State for Status
+  const [statusData, setStatusData] = useState([]);
+  const [statusId, setStatusId] = useState(null);
 
-  const getOcupationData = () => {
+  // Fetch Occupation Data
+  useEffect(() => {
+    getOccupationData();
+    getStatusData();
+  }, []);
+
+  const getOccupationData = () => {
     AuthService.getOccupationList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr====================', res);
-        if (res && res.status == true) {
-          setOcupationData(res.data)
+        if (res && res.status === true) {
+          setOccupationData(res.data);
         }
       })
       .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const handleSelectOcupation = (item) => {
-    setOcupationId(item.id);
+        console.log('Error fetching occupation data:', err);
+      });
   };
 
+  const handleSelectOccupation = (id) => {
+    setOccupationId(id);
+  };
 
-  const [StatusData, setStatusData] = useState([])
-  const [StatusId, setStatusId] = useState(null);
+  const occupationItems = occupationData.map((item) => ({
+    label: item.name, // Occupation Name
+    value: item.id,   // Occupation ID
+  }));
 
+  // Fetch Status Data
   const getStatusData = () => {
     AuthService.getStatusList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr====================', res);
-        if (res && res.status == true) {
-          setStatusData(res.data)
+        if (res && res.status === true) {
+          setStatusData(res.data);
         }
       })
       .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const handleSelectStatus = (item) => {
-    setStatusId(item.id);
+        console.log('Error fetching status data:', err);
+      });
   };
+
+  const handleSelectStatus = (id) => {
+    setStatusId(id);
+  };
+
+  const statusItems = statusData.map((item) => ({
+    label: item.name, // Status Name
+    value: item.id,   // Status ID
+  }));
 
 
   const getProfesoanlInfo = () => {
@@ -174,12 +179,12 @@ const Professional_Info = ({ navigation }) => {
       hasError = true;
       return false;
     }
-    if (LanguageId === '') {
+    if (selectedLanguages === '') {
       Toast.show("Please Select Language's");
       hasError = true;
       return false;
     }
-    if (OcupationId === '') {
+    if (occupationId === '') {
       Toast.show("Please Select Ocupation");
       hasError = true;
       return false;
@@ -189,7 +194,7 @@ const Professional_Info = ({ navigation }) => {
       hasError = true;
       return false;
     }
-    if (StatusId === '') {
+    if (statusId === '') {
       Toast.show("Please Select Meritial Status");
       hasError = true;
       return false;
@@ -198,10 +203,10 @@ const Professional_Info = ({ navigation }) => {
     if (hasError) return;
     let data = {
       "Education": educationId,
-      "languages": LanguageId,
-      "ocupation": OcupationId,
+      "languages": selectedLanguages,
+      "ocupation": occupationId,
       "liveIn": liveIn,
-      "Status": StatusId,
+      "Status": statusId,
 
     }
     const newData = { ...getPersonalData, ...data }
@@ -249,30 +254,107 @@ const Professional_Info = ({ navigation }) => {
 
 
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Education</Text>
-          <SingleSelectPicker
+          {/* <SingleSelectPicker
             data={Educationdata}
             placeholder="Choose Education"
             onSelectItem={handleSelectEducation}
-          />
+          /> */}
+
+          <View
+            style={{
+              backgroundColor: '#F6F5F5',
+              height: 45,
+              borderRadius: 7,
+              width: 330,
+              borderColor: '#ccc',
+              borderWidth: 1,
+              justifyContent: 'center',
+              paddingLeft: 10,
+              marginTop: 7,
+            }}
+          >
+            <RNPickerSelect
+              onValueChange={(value) => handleSelectEducation(value)}
+              items={pickerEducationItems}
+              value={educationId}
+              placeholder={{
+                label: 'Select Education...',
+                value: null,
+              }}
+              style={{
+                inputIOS: {
+                  color: 'black',
+                },
+                inputAndroid: {
+                  color: 'black',
+                },
+              }}
+            />
+          </View>
+
 
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Language</Text>
-          <MultiSelectPicker
-            data={Languagedata}
-            placeholder="Choose Languages"
-            onSelectItem={handleSelectLanguages}
-          />
+          <View
+            style={{
+              backgroundColor: '#F6F5F5',
+              borderRadius: 7,
+              borderColor: '#ccc',
+              borderWidth: 1,
+              padding: 10,
+              marginTop: 7,
+              width: 330,
+            }}
+          >
+            <MultiSelect
+              data={languageData}
+              labelField="label"
+              valueField="value"
+              placeholder={
+                selectedLanguages.length > 0
+                  ? selectedLanguages.map((id) => {
+                    const selectedItem = languageData.find((item) => item.value === id);
+                    return selectedItem ? selectedItem.label : null;
+                  }).join(', ')
+                  : 'Select Languages...'
+              }
+              value={selectedLanguages}
+              onChange={handleSelectLanguages}
+            />
+
+          </View>
+
+
+
 
 
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Occupation</Text>
-          {Ocupationdata && Ocupationdata.length > 0 ? (
-            <SingleSelectPicker
-              data={Ocupationdata}
-              placeholder="Choose Occupation"
-              onSelectItem={handleSelectOcupation}
+          <View
+            style={{
+              backgroundColor: '#F6F5F5',
+              height: 45,
+              borderRadius: 7,
+              width: 330,
+              borderColor: '#ccc',
+              borderWidth: 1,
+              justifyContent: 'center',
+              paddingLeft: 10,
+              marginTop: 7,
+            }}
+          >
+            <RNPickerSelect
+              onValueChange={(value) => handleSelectOccupation(value)}
+              items={occupationItems}
+              value={occupationId}
+              placeholder={{
+                label: 'Select Occupation...',
+                value: null,
+              }}
+              style={{
+                inputIOS: { color: 'black' },
+                inputAndroid: { color: 'black' },
+              }}
             />
-          ) : (
-            <Text>No data found</Text>
-          )}
+          </View>
 
 
           <View style={styles.inputbox_view}>
@@ -287,10 +369,40 @@ const Professional_Info = ({ navigation }) => {
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Status</Text>
-              <SinglePicker data={StatusData}
+              {/* <SinglePicker data={StatusData}
                 placeholder="Select Status"
                 onSelectItem={handleSelectStatus}
-              />
+              /> */}
+
+
+              <View
+                style={{
+                  backgroundColor: '#F6F5F5',
+                  height: 45,
+                  borderRadius: 7,
+                  width: 160,
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  justifyContent: 'center',
+                  paddingLeft: 10,
+                  marginTop: 7,
+                }}
+              >
+                <RNPickerSelect
+                  onValueChange={(value) => handleSelectStatus(value)}
+                  items={statusItems}
+                  value={statusId}
+                  placeholder={{
+                    label: 'Select Status...',
+                    value: null,
+                  }}
+                  style={{
+                    inputIOS: { color: 'black' },
+                    inputAndroid: { color: 'black' },
+                  }}
+                />
+              </View>
+
             </View>
 
           </View>
@@ -299,7 +411,7 @@ const Professional_Info = ({ navigation }) => {
           <View style={{ ...styles.inputbox_view, marginBottom: (30), marginTop: (30) }}>
 
             <Pressable
-             onPress={() => NavigationService.goBack()}
+              onPress={() => NavigationService.goBack()}
               style={{ ...styles.Previousbutton_sty, borderColor: colors.buttonColor }}>
               <Text style={{ ...styles.buttn_txt, color: colors.buttonColor }}>Previous</Text>
             </Pressable>

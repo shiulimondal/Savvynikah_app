@@ -16,6 +16,8 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import AuthService from '../../../Services/Auth';
 import Toast from "react-native-simple-toast";
 import SingleSelectPicker from '../../../ui/SingleSelectPicker';
+import GenderPicker from '../../../ui/GenderPicker.js';
+import RNPickerSelect from 'react-native-picker-select';
 
 // create a component
 const Presonal_Info = ({ navigation }) => {
@@ -40,7 +42,7 @@ const Presonal_Info = ({ navigation }) => {
   const [isModalage, setModalage] = useState(false);
 
 
-  
+
 
   useEffect(() => {
     if (getSignupData?.data?.name) {
@@ -106,7 +108,7 @@ const Presonal_Info = ({ navigation }) => {
   };
 
   useEffect(() => {
-    if (getAge) {    
+    if (getAge) {
       const age = calculateAge(getAge);
       setAgeData(age);
     } else {
@@ -210,96 +212,126 @@ const Presonal_Info = ({ navigation }) => {
     }
   };
 
-  const [sectorData, setSectorData] = useState([])
+  const [sectorData, setSectorData] = useState([]);
   const [sectorId, setSectorId] = useState(null);
   const [sectorName, setSectorName] = useState(null);
 
-  const handleSelectItem = (item) => {
-    setSectorId(item.id);
-    setSectorName(item.name)
-  };
-
-
+  // Fetch sector data on component mount
   useEffect(() => {
-    getSectData()
-  }, [])
+    getSectData();
+  }, []);
 
+  // Fetch sector data
   const getSectData = () => {
     AuthService.getsectList()
       .then((res) => {
-        if (res && res.status == true) {
-          setSectorData(res.data)
+        console.log('Fetched Sector Data: ', res);
+        if (res && res.status === true) {
+          setSectorData(res.data); // Store sector data in state
         }
-
       })
       .catch((err) => {
-        console.log('secterr', err);
+        console.log('Error fetching sector data: ', err);
+      });
+  };
 
-      })
-  }
+  // Handle the selection of a sector
+  const handleSelectItem = (id) => {
+    const selectedItem = sectorData.find((item) => item.id === id);
+    setSectorId(id); // Set selected sector ID
+    setSectorName(selectedItem?.name || null); // Set selected sector name
+  };
+
+  // Map the sector data into picker-friendly format
+  const pickerSectorItems = sectorData
+    .filter((item) => item.active === 1) // Only show active sectors
+    .map((item) => ({
+      label: item.name, // Display the sector name
+      value: item.id,   // Set the sector ID as the value
+    }));
+
 
   useEffect(() => {
-    getMaslakData(),
-    getCastkData()
+    getMaslakData()
   }, [])
 
-  const [maslakData, setMaslakData] = useState([])
+  const [maslakData, setMaslakData] = useState([]);
   const [maslakId, setMaslakId] = useState(null);
 
+  // Fetch maslak data on component mount
+  useEffect(() => {
+    getMaslakData();
+  }, []);
+
+  // Fetch maslak data from the API
   const getMaslakData = () => {
     AuthService.getMaslakList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr', res);
-        if (res && res.status == true) {
-          setMaslakData(res.data)
+        console.log('Fetched Maslak Data: ', res);
+        if (res && res.status === true) {
+          setMaslakData(res.data); // Store maslak data in state
         }
-
       })
       .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-  const handleSelectMaslak = (item) => {
-    setMaslakId(item.id);
+        console.log('Error fetching maslak data: ', err);
+      });
   };
 
-  const getCastkData = () => {
+  // Handle the selection of a maslak
+  const handleSelectMaslak = (id) => {
+    setMaslakId(id); // Set selected maslak ID
+  };
+
+  // Map the maslak data into picker-friendly format
+  const pickerMaslakItems = maslakData
+    .filter((item) => item.active === 1) // Only show active maslaks
+    .map((item) => ({
+      label: item.name, // Display the maslak name
+      value: item.id,   // Set the maslak ID as the value
+    }));
+
+  const [castData, setCastData] = useState([]);
+  const [castId, setCastId] = useState(null);
+
+  useEffect(() => {
+    getCastData();
+  }, []);
+
+  const getCastData = () => {
     AuthService.getCastkList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr', res);
-        if (res && res.status == true) {
-          setCastData(res.data)
+        console.log('Fetched Caste Data: ', res);
+        if (res && res.status) {
+          setCastData(res.data);
         }
-
       })
       .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const [castData, setCastData] = useState([])
-
-  const [castId, setCastId] = useState(null);
-  const handleSelectCast = (item) => {
-    setCastId(item.id);
+        console.log('Error fetching caste data: ', err);
+      });
   };
 
-  const [genderData, setGenderData] = useState([
-    {
-      id: 1,
-      name: 'Male'
-    },
-    {
-      id: 2,
-      name: 'Female'
-    },
+  const handleSelectCast = (value) => {
+    const selectedCast = castData.find((item) => item.id === value);
+    if (selectedCast) {
+      setCastId(selectedCast.id);
+    }
+  };
 
-  ])
+  const pickerItems = castData
+    .filter((item) => item.active === 1)
+    .map((item) => ({
+      label: item.name,
+      value: item.id,
+    }));
+
   const [genderId, setGenderId] = useState(null);
-  const handleSelectGender = (item) => {
-    setGenderId(item.name);
+  const [genderName, setGenderName] = useState(null);
+
+  const handleSelectGender = (selectedItem) => {
+    if (!selectedItem) return;
+    setGenderId(selectedItem.id);
+    setGenderName(selectedItem.name)
+    console.log('Selected Gender:', selectedItem.name); // Logs the gender name
   };
 
 
@@ -351,7 +383,7 @@ const Presonal_Info = ({ navigation }) => {
       hasError = true;
       return false;
     }
-  
+
 
     if (hasError) return;
     let data = {
@@ -360,13 +392,15 @@ const Presonal_Info = ({ navigation }) => {
       "sectorName": sectorName,
       "cast": castId,
       "dob": dob,
-      "gender": genderId,
+      "gender": genderName,
       "age": AgeData,
       "height": height,
       "weight": weight,
       "maslakId": maslakId,
       "images": ImageData,
     }
+    // console.log('ddddddddddddddddddddddddddddddddddddddddddddddddddddddd', data);
+
     NavigationService.navigate('Professional_Info', { personalData: data })
   }
 
@@ -424,21 +458,100 @@ const Presonal_Info = ({ navigation }) => {
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Select Sector</Text>
-              <SinglePicker
-                data={sectorData}
-                placeholder="Select Sector"
-                onSelectItem={handleSelectItem}
-              />
+              {/* <SinglePicker
+                labelKey="name"
+                valueKey="id"
+                placeholder="Select State"
+                options={sectorData}
+                selectedValue={sectorId}
+                onValueChange={handleSelectItem}
+              /> */}
+
+            
+
+                <View style={{
+                  backgroundColor: '#F6F5F5',
+                  height: 45,
+                  borderRadius: 7,
+                  width: 160,
+                  borderColor: '#ccc',
+                  borderWidth: 1,
+                  justifyContent: 'center',
+                  paddingLeft: 10,
+                  marginTop: 7
+                }}>
+
+                  <RNPickerSelect
+                    onValueChange={(value) => handleSelectItem(value)}
+                    items={pickerSectorItems}
+                    value={sectorId}
+                    placeholder={{
+                      label: 'Select a Sect...',
+                      value: null,
+                    }}
+                    style={{
+                      inputIOS: {
+                        color: 'black',
+                      },
+                      inputAndroid: {
+                        color: 'black',
+                      },
+                    }}
+                  />
+                </View>
+          
             </View>
           </View>
 
           <View style={styles.inputbox_view}>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Cast</Text>
-              <SinglePicker
+              {/* <SinglePicker
                 data={castData}
                 placeholder="Select Cast"
-                onSelectItem={handleSelectCast} />
+                onSelectItem={handleSelectCast} /> */}
+
+
+              {/* <SinglePicker
+                labelKey="name"
+                valueKey="id"
+                placeholder="Select Cast"
+                options={castData}
+                selectedValue={castId}
+                onValueChange={handleSelectCast} /> */}
+
+              <View style={{
+                backgroundColor: '#F6F5F5',
+                height: 45,
+                borderRadius: 7,
+                width: 160,
+                borderColor: '#ccc',
+                borderWidth: 1,
+                justifyContent: 'center',
+                paddingLeft: 10,
+                marginTop: 7
+              }}>
+                <RNPickerSelect
+                  onValueChange={(value) => handleSelectCast(value)}
+                  items={pickerItems}
+                  value={castId}
+                  placeholder={{
+                    label: 'Select a caste...',
+                    value: null,
+                  }}
+                  style={{
+                    inputIOS: {
+                      color: 'black',
+
+                    },
+                    inputAndroid: {
+                      color: 'black',
+                    },
+                  }}
+                />
+              </View>
+
+
             </View>
 
             <View>
@@ -468,11 +581,29 @@ const Presonal_Info = ({ navigation }) => {
           <View style={styles.inputbox_view}>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Gender</Text>
-              <SinglePicker data={genderData}
+
+
+              <GenderPicker
+                // label="Gender"
+                labelKey="name"
+                valueKey="id"
+                placeholder="Select Gender"
+                options={[
+                  { id: 1, name: 'Male' },
+                  { id: 2, name: 'Female' }
+                ]}
+                selectedValue={genderId} // This will now correctly update
+                onValueChange={handleSelectGender} // Pass the full object
+              />
+
+
+
+
+              {/* <SinglePicker data={genderData}
                 placeholder="Select Gender"
                 onSelectItem={handleSelectGender}
 
-              />
+              /> */}
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Height</Text>
@@ -508,11 +639,52 @@ const Presonal_Info = ({ navigation }) => {
             </View>
           </View>
           <Text style={{ ...styles.input_title, marginTop: (10), color: colors.secondaryFontColor }}>Maslak (Optional)</Text>
-          <SingleSelectPicker
+          {/* <SingleSelectPicker
             data={maslakData}
             placeholder="Select Maslak"
             onSelectItem={handleSelectMaslak}
-          />
+          /> */}
+
+          {/* <SingleSelectPicker
+            labelKey="name"
+            valueKey="id"
+            placeholder="Select Maslak"
+            options={maslakData}
+            selectedValue={maslakId}
+            onValueChange={handleSelectMaslak} /> */}
+          <View style={{
+            backgroundColor: '#F6F5F5',
+            height: 45,
+            borderRadius: 7,
+            width: 330,
+            borderColor: '#ccc',
+            borderWidth: 1,
+            justifyContent: 'center',
+            paddingLeft: 10,
+            marginTop: 7
+          }}>
+
+            <RNPickerSelect
+              onValueChange={(value) => handleSelectMaslak(value)}
+              items={pickerMaslakItems}
+              value={maslakId}
+              placeholder={{
+                label: 'Select a Maslak',
+                value: null,
+              }}
+              style={{
+                inputIOS: {
+                  color: 'black',
+
+                },
+                inputAndroid: {
+                  color: 'black',
+                },
+              }}
+            />
+          </View>
+
+
           <View style={{ ...styles.inputbox_view, marginBottom: (30), marginTop: (30) }}>
 
             <Pressable
@@ -591,7 +763,7 @@ const Presonal_Info = ({ navigation }) => {
         <View style={styles.modalContainerage}>
           <View style={styles.modalContentage}>
             <Text style={styles.modalTextage}>
-            Available for users aged 18 or older. Please update your date of birth.
+              Available for users aged 18 or older. Please update your date of birth.
             </Text>
           </View>
         </View>
@@ -617,14 +789,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
-    elevation:10
+    elevation: 10
   },
   modalTextage: {
     fontSize: 15,
     marginBottom: 20,
     textAlign: 'center',
-    color:'rgba(30,68,28,255)',
-    fontFamily:FONTS.Poppins.medium
+    color: 'rgba(30,68,28,255)',
+    fontFamily: FONTS.Poppins.medium
   },
   labelContainer: {
     alignItems: 'center',

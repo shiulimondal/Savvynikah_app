@@ -17,6 +17,7 @@ import Modal from "react-native-modal";
 import Congrats from '../../../Components/CongratsCard/Congrats';
 import SingleSelectPicker from '../../../ui/SingleSelectPicker';
 import AuthService from '../../../Services/Auth';
+import RNPickerSelect from 'react-native-picker-select';
 
 const { height, width } = Dimensions.get('screen')
 // create a component
@@ -32,6 +33,7 @@ const Other_Info = ({ navigation }) => {
     const [habbit, setHabbit] = useState('');
     const [about, setAbout] = useState('');
     const [btnLoader, setBtnLoader] = useState(false);
+    const [isModalVisible, setModalVisible] = useState(false)
 
     const orderStatusData = [
         { name: 'Personal Info' },
@@ -69,58 +71,66 @@ const Other_Info = ({ navigation }) => {
         setCurrentPage(position);
     };
 
-    const [stateData, setStateData] = useState([])
-    const [stateId, setateId] = useState(null);
+    const [stateData, setStateData] = useState([]);
+    const [stateId, setStateId] = useState(null);
 
-    const [cityData, setCityData] = useState([])
+    const [cityData, setCityData] = useState([]);
     const [cityId, setCityId] = useState(null);
 
-    const [isModalVisible, setModalVisible] = useState(false);
-    const toggleModal = () => {
-        setModalVisible(!isModalVisible);
-    };
-
-
+    // Fetch States on Component Mount
     useEffect(() => {
-        getStatetData()
-    }, [])
+        getStateData();
+    }, []);
 
-    const getStatetData = () => {
+    const getStateData = () => {
         AuthService.getStateList()
             .then((res) => {
-                if (res && res.status == true) {
-                    setStateData(res.data)
+                if (res && res.status === true) {
+                    setStateData(res.data);
                 }
             })
             .catch((err) => {
-                console.log('secterr', err);
-            })
-    }
-    const handleStateItem = (item) => {
-        setateId(item.id);
-        getCityData(item.id)
+                console.log('Error fetching state data:', err);
+            });
     };
+
+    const handleStateItem = (id) => {
+        setStateId(id);
+        setCityId(null); // Reset city when state changes
+        getCityData(id);
+    };
+
+    const stateItems = stateData.map((item) => ({
+        label: item.name, // State Name
+        value: item.id,   // State ID
+    }));
 
     const getCityData = (stateId) => {
-        let data = {
-            "state_id": stateId
-        }
+        if (!stateId) return;
+
+        let data = { state_id: stateId };
         AuthService.getCityList(data)
             .then((res) => {
-                if (res && res.status == true) {
-                    setCityData(res.data)
+                if (res && res.status === true) {
+                    setCityData(res.data);
                 }
             })
             .catch((err) => {
-                console.log('secterr', err);
-            })
-    }
-
-    const handleCityItem = (item) => {
-        setCityId(item.id);
+                console.log('Error fetching city data:', err);
+            });
     };
 
-    
+    const handleCityItem = (id) => {
+        setCityId(id);
+    };
+
+    const cityItems = cityData.map((item) => ({
+        label: item.name, // City Name
+        value: item.id,   // City ID
+    }));
+
+
+
     const getUpdateProfile = (() => {
         let hasError = false;
         if (address === '') {
@@ -169,7 +179,8 @@ const Other_Info = ({ navigation }) => {
             "maslak_id": getOtherInfo?.maslakId,
             "sect_id": getOtherInfo?.sector,
             "marital_status_id": getOtherInfo?.Status,
-            "caste": getOtherInfo?.cast,
+            // "caste": getOtherInfo?.cast,
+            "caste_id": getOtherInfo?.cast,
             "gender": getOtherInfo?.gender,
             "height": getOtherInfo?.height,
             "weight": getOtherInfo?.weight,
@@ -186,10 +197,10 @@ const Other_Info = ({ navigation }) => {
             "images": getOtherInfo?.images
         }
         setBtnLoader(true)
-        // console.log('Signup data:==========00000000000000000000====', data);
+        console.log('Signup data:==========00000000000000000000====', data);
         AuthService.getUpdateRegProfile(data)
             .then((res) => {
-                // console.log('Signup successful=======================', res);
+                console.log('Signup successful=======================', res);
                 if (res && res.status == true) {
                     setModalVisible(true);
                     setTimeout(() => {
@@ -261,20 +272,78 @@ const Other_Info = ({ navigation }) => {
                     </View>
 
                     <Text style={{ ...styles.input_title, marginTop: (10), color: colors.secondaryFontColor }}>Select State</Text>
-                    <SingleSelectPicker
+                    {/* <SingleSelectPicker
                         data={stateData}
                         placeholder="Select State"
                         onSelectItem={handleStateItem}
-                    />
+                    /> */}
+
+                    <View
+                        style={{
+                            backgroundColor: '#F6F5F5',
+                            height: 45,
+                            borderRadius: 7,
+                            width: 330,
+                            borderColor: '#ccc',
+                            borderWidth: 1,
+                            justifyContent: 'center',
+                            paddingLeft: 10,
+                            marginTop: 7,
+                        }}
+                    >
+                        <RNPickerSelect
+                            onValueChange={(value) => handleStateItem(value)}
+                            items={stateItems}
+                            value={stateId}
+                            placeholder={{
+                                label: 'Select a State...',
+                                value: null,
+                            }}
+                            style={{
+                                inputIOS: { color: 'black' },
+                                inputAndroid: { color: 'black' },
+                            }}
+                        />
+                    </View>
 
                     <View style={styles.inputbox_view}>
                         <View>
                             <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>City</Text>
-                            <SinglePicker
+                            {/* <SinglePicker
                                 data={cityData}
                                 placeholder="Select City"
                                 onSelectItem={handleCityItem}
-                            />
+                            /> */}
+
+                            <View
+                                style={{
+                                    backgroundColor: '#F6F5F5',
+                                    height: 45,
+                                    borderRadius: 7,
+                                    width: 160,
+                                    borderColor: '#ccc',
+                                    borderWidth: 1,
+                                    justifyContent: 'center',
+                                    paddingLeft: 10,
+                                    marginTop: 7,
+                                }}
+                            >
+                                <RNPickerSelect
+                                    onValueChange={(value) => handleCityItem(value)}
+                                    items={cityItems}
+                                    value={cityId}
+                                    placeholder={{
+                                        label: stateId ? 'Select a City...' : 'Select a State first',
+                                        value: null,
+                                    }}
+                                    disabled={!stateId} // Disable City dropdown if no State selected
+                                    style={{
+                                        inputIOS: { color: 'black' },
+                                        inputAndroid: { color: 'black' },
+                                    }}
+                                />
+                            </View>
+
                         </View>
 
                         <View>
@@ -320,7 +389,7 @@ const Other_Info = ({ navigation }) => {
                             <AppTextInput
                                 multiline={true}
                                 numberOfLines={4}
-                                inputContainerStyle={{ ...styles.aboutinputcontainer_sty,height:(90) }}
+                                inputContainerStyle={{ ...styles.aboutinputcontainer_sty, height: (90) }}
                                 inputStyle={{ ...styles.text_input, color: colors.secondaryFontColor }}
                                 value={about}
                                 onChangeText={(val) => setAbout(val)}
@@ -392,8 +461,8 @@ const styles = StyleSheet.create({
     labeltxt: {
         fontFamily: FONTS.Inter.semibold,
         fontSize: 11,
-        marginTop: 7 
-      },
+        marginTop: 7
+    },
     user_name: {
         fontFamily: FONTS.Inter.bold,
         fontSize: 14,
@@ -422,7 +491,7 @@ const styles = StyleSheet.create({
         borderRadius: 7
     },
     img_circle: {
-        height:80,
+        height: 80,
         width: 80,
         borderWidth: 1,
         borderColor: '#666',

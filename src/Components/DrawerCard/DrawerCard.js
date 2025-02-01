@@ -118,8 +118,6 @@ const DrawerCard = () => {
     };
 
 
-
-
     const logoutUser = () => {
         Toast.show('Logged Out Successfully ', Toast.SHORT);
         AuthService.setToken(null)
@@ -130,10 +128,10 @@ const DrawerCard = () => {
 
 
     useEffect(() => {
-        geUserFullProfile()
+        getUserFullProfile()
     }, [])
 
-    const geUserFullProfile = () => {
+    const getUserFullProfile = () => {
         HomeService.getUserProfile()
             .then((res) => {
                 if (res && res.status === true) {
@@ -146,10 +144,6 @@ const DrawerCard = () => {
 
             })
     }
-
-
-
-
 
     return (
         <View style={styles.container_sty}>

@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, TextInput, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, Dimensions } from 'react-native';
 import { Icon } from 'react-native-basic-elements';
-import { moderateScale } from '../../Constants/PixelRatio';
-import { FONTS } from '../../Constants/Fonts';
 
 const { height, width } = Dimensions.get('screen');
-const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labelKey = "option_name", valueKey = "id", placeholder = "Select" }) => {
+
+const CastPicker = ({ label, options, selectedValue, onValueChange, labelKey = "name", valueKey = "id", placeholder = "Select" }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
+  const handleOptionPress = (value) => {
+    onValueChange(value);
+    setModalVisible(false);
+  };
 
   // Ensure options is always an array to avoid errors
   const safeOptions = Array.isArray(options) ? options : [];
@@ -15,11 +18,6 @@ const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labe
   // Find the name corresponding to the selectedValue (id)
   const selectedOption = safeOptions.find(option => option[valueKey] === selectedValue);
   const displayValue = selectedOption ? selectedOption[labelKey] : placeholder;
-
-  const handleOptionPress = (value) => {
-    onValueChange(value);
-    setModalVisible(false);
-  };
 
   return (
     <View style={styles.container}>
@@ -29,7 +27,7 @@ const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labe
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.pickerText}>
-            {displayValue}
+          {displayValue}
         </Text>
         <Icon name="down" type='AntDesign' size={16} style={styles.icon} />
       </TouchableOpacity>
@@ -45,7 +43,7 @@ const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labe
             <Text style={styles.header_txt}>Select an Item</Text>
             <FlatList
               showsVerticalScrollIndicator={true}
-              data={options}
+              data={safeOptions}
               keyExtractor={(item) => item[valueKey].toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
@@ -57,21 +55,15 @@ const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labe
               )}
             />
 
-            <TouchableOpacity  onPress={() => setModalVisible(false)} style={styles.button}>
-              <Text style={{
-                fontSize: 14,
-                color: '#fff'
-              }}>Close</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.button}>
+              <Text style={{ fontSize: 14, color: '#fff' }}>Close</Text>
             </TouchableOpacity>
-
           </View>
         </TouchableOpacity>
-
       </Modal>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -79,7 +71,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    // marginBottom: 8,
     color: '#000'
   },
   pickerContainer: {
@@ -92,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#F6F5F5',
     height: 45,
-    width: 330
+    width: 160
   },
   pickerText: {
     fontSize: 14,
@@ -122,7 +113,6 @@ const styles = StyleSheet.create({
   },
   option: {
     padding: 10,
-    // borderBottomWidth:1
   },
   optionText: {
     fontSize: 13,
@@ -139,4 +129,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SingleSelectPicker;
+export default CastPicker;

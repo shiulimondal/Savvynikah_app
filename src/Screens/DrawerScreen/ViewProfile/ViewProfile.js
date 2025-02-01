@@ -14,6 +14,7 @@ import Modal from "react-native-modal";
 import NavigationService from '../../../Services/Navigation';
 import { useSelector } from 'react-redux';
 import firestore from '@react-native-firebase/firestore';
+import ImageViewing from 'react-native-image-viewing';
 
 
 const { height, width } = Dimensions.get('screen');
@@ -24,13 +25,15 @@ const ViewProfile = () => {
     const colors = useTheme();
     const route = useRoute()
     const profileid = route.params.userId;
-
-
+    const [visible, setVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [userProfileData, setUserProfileData] = useState([])
-    // console.log('idddddddddddddddddddddddddddd===========================', userProfileData);
 
-    const [isModalVisible, setModalVisible] = useState(false);
+    const [imageIndex, setImageIndex] = useState(0);
+
+    const images = userProfileData?.profile_images?.map(img => ({ uri: img.url })) || [];
+
+ const [isModalVisible, setModalVisible] = useState(false);
     const toggleModal = () => {
         setModalVisible(!isModalVisible);
     };
@@ -62,6 +65,8 @@ const ViewProfile = () => {
         setLoading(true);
         HomeService.getuserFullData(data)
             .then((res) => {
+                console.log('uuuuuuuuuuuuuuuuuu-------------------------------------------', JSON.stringify(res));
+
                 if (res && res.success === true) {
                     if (res.data) {
                         setUserProfileData(res.data);
@@ -93,8 +98,8 @@ const ViewProfile = () => {
         HomeService.setChatUser(data)
             .then((res) => {
                 if (res && res.status == true) {
-                    NavigationService.navigate('SingleChatScreen', { chatData: res.data,senderName:userProfileData?.full_name })
-
+                    NavigationService.navigate('SingleChatScreen',
+                        { chatData: res.data, senderName: userProfileData?.full_name })
                 }
 
             })
@@ -114,9 +119,17 @@ const ViewProfile = () => {
                         <View style={{ height: height / 4.2 }}>
                             {
                                 userProfileData?.profile_images?.length === 1 ?
-                                    <View style={{ height: height / 2.7 }}>
-                                        <Image source={{ uri: userProfileData?.profile_images[0]?.url }} style={styles.bannerImg} />
-                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setImageIndex(0);
+                                            setVisible(true);
+                                        }}
+                                        activeOpacity={0.9}
+                                    >
+                                        <View style={{ height: height / 2.7,alignItems:'center' }}>
+                                            <Image source={{ uri: userProfileData?.profile_images[0]?.url }} style={styles.bannerImg} />
+                                        </View>
+                                    </TouchableOpacity>
                                     :
                                     <SwiperFlatList
                                         showPagination
@@ -133,10 +146,18 @@ const ViewProfile = () => {
                                             backgroundColor: colors.shadowColor,
                                         }}
                                         data={userProfileData?.profile_images}
-                                        renderItem={({ item }) => (
-                                            <View style={{ height: height / 2.7 }}>
-                                                <Image source={{ uri: item.url }} style={styles.bannerImg} />
-                                            </View>
+                                        renderItem={({ item, index }) => (
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setImageIndex(index);
+                                                    setVisible(true);
+                                                }}
+                                                activeOpacity={0.9}
+                                            >
+                                                <View style={{ height: height / 2.7 }}>
+                                                    <Image source={{ uri: item.url }} style={styles.bannerImg} />
+                                                </View>
+                                            </TouchableOpacity>
                                         )}
                                     />
                             }
@@ -200,6 +221,14 @@ const ViewProfile = () => {
                     </TouchableOpacity>
                 </View>
             </Modal>
+
+
+            <ImageViewing
+                images={images}
+                imageIndex={imageIndex}
+                visible={visible}
+                onRequestClose={() => setVisible(false)}
+            />
 
         </View>
     );

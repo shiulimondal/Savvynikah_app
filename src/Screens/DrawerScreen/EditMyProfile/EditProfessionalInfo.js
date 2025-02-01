@@ -1,10 +1,9 @@
 // import libraries
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, Pressable, Image, Dimensions, TouchableOpacity } from 'react-native';
 import Header from '../../../Components/Header/Header';
 import { AppButton, AppTextInput, Icon, Picker, useTheme, Text } from 'react-native-basic-elements';
 import { FONTS } from '../../../Constants/Fonts';
-// import { moderateScale } from '../../../Constants/PixelRatio';
 import StepIndicator from 'react-native-step-indicator';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import MultiSelectPicker from '../../../ui/MultiSelectPicker';
@@ -16,6 +15,9 @@ import SinglePicker from '../../../ui/SinglePicker';
 import Toast from "react-native-simple-toast";
 import { useSelector } from 'react-redux';
 import HomeService from '../../../Services/HomeServises';
+import EducationPicker from '../../../ui/EducationPicker';
+import OcupationPicker from '../../../ui/OcupationPicker';
+import StatusPicker from '../../../ui/StatusPicker';
 
 const { height, width } = Dimensions.get('screen')
 // create a component
@@ -25,8 +27,10 @@ const EditProfessionalInfo = ({ navigation }) => {
   const route = useRoute()
   const getPersonalData = route.params.personalData
 
-  const [liveIn, setLiveIn] = useState('');
+  console.log('getPersonalDatagetPersonalDatagetPersonalData=====================', getPersonalData);
 
+
+  const [liveIn, setLiveIn] = useState('');
 
   const orderStatusData = [
     { name: 'Personal Info' },
@@ -89,14 +93,33 @@ const EditProfessionalInfo = ({ navigation }) => {
   const geUserFullProfile = () => {
     HomeService.getUserProfile()
       .then((res) => {
-        console.log('-------------------------------------------------profile---------------------', JSON.stringify(res));
+        console.log('langgggggggggggggggggggggggggg---------------------------------------ggggggggg', JSON.stringify(res));
         if (res && res.status === true) {
-          setUserProfileData(res.data);
-          setEducatonId(res?.data?.education?.id)
-          setOcupationId(res?.data?.occupation?.id)
-          setLanguageId(res?.data?.languages?.map(langId =>langId.id))
-          setLiveIn(res?.data?.lives_in)
-          setStatusId(res?.data?.user_marital_status?.id)
+
+          const data = res.data;
+          console.log('langgggggggggggggggggggggggggggggggggggggg', data.languages);
+
+          setUserProfileData(data);
+          if (data?.education) setEducationData(prevData => prevData.some(item => item.id === data?.education?.id) ? prevData : [...prevData, data.education]);
+          setEducatonId(data?.education?.id)
+
+          if (data?.occupation) setOcupationData(prevData => prevData.some(item => item.id === data?.occupation?.id) ? prevData : [...prevData, data.occupation]);
+
+          setOcupationId(data?.occupation?.id)
+
+          if (data?.languages) {
+            setLanguageData(prevData => {
+              const newLanguages = data?.languages?.filter(lang => !prevData.some(item => item.id === lang.id));
+              return [...prevData, ...newLanguages];
+            });
+          }
+
+          // if (data?.languages) setLanguageData(prevData => prevData.some(item => item.id === data?.languages?.id) ? prevData : [...prevData, data.languages]);
+          // setLanguageId(data?.languages ? data.languages.map(lang => lang.id) : []);
+          setLanguageId(data?.languages?.map(langId => langId.id))
+          setLiveIn(data?.lives_in)
+          if (data?.user_marital_status) setStatusData(prevData => prevData.some(item => item.id === data?.user_marital_status?.id) ? prevData : [...prevData, data.user_marital_status]);
+          setStatusId(data?.user_marital_status?.id)
         }
       })
       .catch((err) => {
@@ -105,11 +128,34 @@ const EditProfessionalInfo = ({ navigation }) => {
       })
   }
 
+  const [Languagedata, setLanguageData] = useState([])
+  const [LanguageId, setLanguageId] = useState([]);
+
+  const getLanguageData = () => {
+    AuthService.getLanguagesList()
+      .then((res) => {
+        // console.log('ressectorrrrrrrrrrrrrr====================', res);
+        if (res && res.status == true) {
+          const formattedLanguages = res.data.map(lang => ({
+            value: lang.id,
+            label: lang.name,
+          }));
+
+          setLanguageData(formattedLanguages);
+        }
+      })
+      .catch((err) => {
+        console.log('secterr', err);
+
+      })
+  }
+
+  const handleSelectLanguages = (selectedLanguages) => {
+    setLanguageId(selectedLanguages.map(lang => lang.value));
+  };
+
   const [Educationdata, setEducationData] = useState([])
   const [educationId, setEducatonId] = useState(null);
-
-
-
 
   const getEducationData = () => {
     AuthService.getEducationList()
@@ -126,37 +172,14 @@ const EditProfessionalInfo = ({ navigation }) => {
   }
 
   const handleSelectEducation = (item) => {
-    setEducatonId(item.id);
+    setEducatonId(item);
   };
 
-  const [Languagedata, setLanguageData] = useState([])
-  const [LanguageId, setLanguageId] = useState([]);
 
-  const getLanguageData = () => {
-    AuthService.getLanguagesList()
-      .then((res) => {
-        console.log('ressectorrrrrrrrrrrrrr====================', res);
-        if (res && res.status == true) {
-          setLanguageData(res.data)
-        }
-      })
-      .catch((err) => {
-        console.log('secterr', err);
-
-      })
-  }
-
-  const handleSelectLanguages = (id) => {
-    setLanguageId(id)
-  };
-  console.log('LanguageIdLanguageId========================', LanguageId);
 
 
   const [Ocupationdata, setOcupationData] = useState([])
   const [OcupationId, setOcupationId] = useState(null);
-
-  console.log('OcupationIdOcupationIdOcupationIdOcupationId', OcupationId);
-
 
   const getOcupationData = () => {
     AuthService.getOccupationList()
@@ -173,16 +196,11 @@ const EditProfessionalInfo = ({ navigation }) => {
   }
 
   const handleSelectOcupation = (item) => {
-    setOcupationId(item.id);
+    setOcupationId(item);
   };
-
 
   const [StatusData, setStatusData] = useState([])
   const [StatusId, setStatusId] = useState(null);
-
-  console.log('OcupationIdOcupationIdOcupationIdOcupationId', OcupationId);
-
-
   const getStatusData = () => {
     AuthService.getStatusList()
       .then((res) => {
@@ -198,19 +216,20 @@ const EditProfessionalInfo = ({ navigation }) => {
   }
 
   const handleSelectStatus = (item) => {
-    setStatusId(item.id);
+    setStatusId(item);
   };
+
+  console.log('secterr------------------------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', StatusId);
 
 
   const getProfesoanlInfo = () => {
-  
+
     let data = {
       "Education": educationId,
       "languages": LanguageId,
       "ocupation": OcupationId,
       "liveIn": liveIn,
       "Status": StatusId,
-
     }
     const newData = { ...getPersonalData, ...data }
     NavigationService.navigate('EditOtherInfo', { OtherInfoData: newData })
@@ -241,12 +260,15 @@ const EditProfessionalInfo = ({ navigation }) => {
         <View style={{ marginHorizontal: (15), marginTop: (15) }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
 
-            <View style={styles.img_circle}>
-              <Image
-                source={getPersonalData?.images?.length > 0 ? { uri: getPersonalData?.images[0]?.url } :
-                  require('../../../assets/images/user.png')}
-                style={styles.user_img} />
-            </View>
+            <TouchableOpacity >
+              <View style={styles.img_circle}>
+                <Image
+                  source={getPersonalData?.images?.length > 0 ? { uri: getPersonalData?.images[0]?.url } :
+                    require('../../../assets/images/user.png')}
+                  style={styles.user_img} />
+              </View>
+            </TouchableOpacity>
+
 
             <View style={{ marginLeft: (10) }}>
               <Text style={{ ...styles.user_name, color: colors.secondaryFontColor }}>{getPersonalData?.name}</Text>
@@ -257,10 +279,19 @@ const EditProfessionalInfo = ({ navigation }) => {
 
 
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Education</Text>
-          <SingleSelectPicker
+          {/* <EducationPicker
             data={Educationdata}
             placeholder="Choose Education"
             onSelectItem={handleSelectEducation}
+          /> */}
+
+          <EducationPicker
+            labelKey="name"
+            valueKey="id"
+            placeholder="Choose Education"
+            options={Educationdata}
+            selectedValue={educationId}
+            onValueChange={handleSelectEducation}
           />
 
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Language</Text>
@@ -270,15 +301,23 @@ const EditProfessionalInfo = ({ navigation }) => {
             onSelectItem={handleSelectLanguages}
           />
 
-
           <Text style={{ ...styles.input_title, marginTop: 10, color: colors.secondaryFontColor }}>Ocupation</Text>
-        
-            <SingleSelectPicker
-              data={Ocupationdata}
-              placeholder="Choose Occupation"
-              onSelectItem={handleSelectOcupation}
-            />
-      
+
+          {/* <OcupationPicker
+            data={Ocupationdata}
+            placeholder="Choose Occupation"
+            onSelectItem={handleSelectOcupation}
+          /> */}
+
+          <OcupationPicker
+            labelKey="name"
+            valueKey="id"
+            placeholder="Choose Occupation"
+            options={Ocupationdata}
+            selectedValue={OcupationId}
+            onValueChange={handleSelectOcupation}
+          />
+
 
           <View style={styles.inputbox_view}>
             <View>
@@ -292,10 +331,20 @@ const EditProfessionalInfo = ({ navigation }) => {
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Status</Text>
-              <SinglePicker data={StatusData}
+              {/* <SinglePicker data={StatusData}
                 placeholder="Select Status"
                 onSelectItem={handleSelectStatus}
+              /> */}
+
+              <StatusPicker
+                labelKey="name"
+                valueKey="id"
+                placeholder="Select State"
+                options={StatusData}
+                selectedValue={StatusId}
+                onValueChange={handleSelectStatus}
               />
+
             </View>
 
           </View>
@@ -304,7 +353,7 @@ const EditProfessionalInfo = ({ navigation }) => {
           <View style={{ ...styles.inputbox_view, marginBottom: (30), marginTop: (30) }}>
 
             <Pressable
-               onPress={() => NavigationService.goBack()}
+              onPress={() => NavigationService.goBack()}
               style={{ ...styles.Previousbutton_sty, borderColor: colors.buttonColor }}>
               <Text style={{ ...styles.buttn_txt, color: colors.buttonColor }}>Previous</Text>
             </Pressable>

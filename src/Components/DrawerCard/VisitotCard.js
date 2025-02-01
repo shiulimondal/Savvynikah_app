@@ -10,12 +10,6 @@ import NavigationService from '../../Services/Navigation';
 // create a component
 const VisitorCard = ({ item, index }) => {
     const colors = useTheme();
-    function toFeet(n) {
-        var realFeet = (n * 0.3937) / 12;
-        var feet = Math.floor(realFeet);
-        var inches = Math.round((realFeet - feet) * 12);
-        return feet + 'ft-' + inches + 'inch';
-    }
     return (
         <Card
         onPress={()=>NavigationService.navigate('ViewProfile',{userId:item.id})}
@@ -35,7 +29,7 @@ const VisitorCard = ({ item, index }) => {
                         </Text>
                     ) : null}
                     <Text style={{ ...styles.age_txt, color: colors.light_txt, }}> {item.age} years </Text>
-                    <Text style={{ ...styles.age_txt, color: colors.light_txt }}>({toFeet(item.height)})</Text>
+                    <Text style={{ ...styles.age_txt, color: colors.light_txt }}>{item.height} Cm</Text>
                 </View>
                 <View style={{ flexDirection: 'row' }}>
                     {item.caste ? (

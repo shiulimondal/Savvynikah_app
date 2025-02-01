@@ -122,7 +122,7 @@ const FilterCardddd = ({ setModalVisible, onSaveFilter }) => {
   };
 
   const filterData = {
-    genderId:selectedGender?.id,
+    genderId: selectedGender?.id,
     gender: selectedGender?.name,
     marital_status: StatusId,
     education_id: educationId,
@@ -132,7 +132,7 @@ const FilterCardddd = ({ setModalVisible, onSaveFilter }) => {
     min_age: minValue,
     max_age: maxValue,
     caste: selectedCaste?.name,
-    casteId:selectedCaste?.id
+    casteId: selectedCaste?.id
   };
 
   const handleSave = () => {
@@ -166,7 +166,7 @@ const FilterCardddd = ({ setModalVisible, onSaveFilter }) => {
           {genderData.map((gender, index) => (
             <View style={styles.caste_list_view} key={index}>
               <RadioButton
-                selected={selectedGender?.id === gender.id} 
+                selected={selectedGender?.id === gender.id}
                 onChange={() => handleSelectGender(gender)}
                 size={18}
                 containerStyle={{ borderWidth: 1 }}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     height: moderateScale(35),
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal:moderateScale(30)
+    marginHorizontal: moderateScale(30)
   },
   cancle_btn: {
     height: moderateScale(40),

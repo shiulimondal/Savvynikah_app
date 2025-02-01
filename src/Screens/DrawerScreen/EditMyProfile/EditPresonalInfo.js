@@ -20,6 +20,8 @@ import Toast from "react-native-simple-toast";
 import SingleSelectPicker from '../../../ui/SingleSelectPicker';
 import HomeService from '../../../Services/HomeServises';
 import { useSelector } from 'react-redux';
+import GenderPicker from '../../../ui/GenderPicker';
+import CastPicker from '../../../ui/CastPicker';
 
 // create a component
 const EditPresonalInfo = ({ navigation }) => {
@@ -36,7 +38,7 @@ const EditPresonalInfo = ({ navigation }) => {
   const [weight, setWeight] = useState('')
 
   // console.log('DateDataDateData',DateData);
-  
+
   const [ImageData, setImageData] = useState([]);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -167,12 +169,8 @@ const EditPresonalInfo = ({ navigation }) => {
           uri: asset.uri,
         }));
         setSelectedDocuments(prev => [...prev, ...selectedAssets]);
-
-        // console.log('selectedAssetsselectedAssetsselectedAssets=====================================', selectedAssets);
-
         try {
           const response = await HttpClient.uploadFile('/upload-images', selectedAssets, {});
-          // console.log('Upload response:====================================================', JSON.stringify(response));
           setImageData(response?.data)
           setModalVisible(false);
         } catch (error) {
@@ -187,46 +185,14 @@ const EditPresonalInfo = ({ navigation }) => {
   };
 
   const [sectorData, setSectorData] = useState([])
-  // console.log('sectorDatasectorDatasectorData================================================',sectorData);
-  
   const [sectorId, setSectorId] = useState(null);
   const [sectorName, setSectorName] = useState(null);
 
-  const handleSelectItem = (item) => {
-    setSectorId(item.id);
-    setSectorName(item.name)
+  const handleSelectItem = (id) => {
+    const selectedItem = sectorData.find(item => item.id === id);
+    setSectorId(id);
+    setSectorName(selectedItem?.name || null);
   };
-  const [userProfileData, setUserProfileData] = useState([])
-  useEffect(() => {
-    geUserFullProfile()
-  }, [])
-
-
-  const geUserFullProfile = () => {
-  
-    HomeService.getUserProfile()
-      .then((res) => {
-        // console.log('---------------------------fatchhhhhh--------------', JSON.stringify(res));
-        if (res && res.status === true) {
-          setUserProfileData(res.data);
-          setName(res?.data?.name)
-          setSectorData(res?.data?.sect)
-          setSectorId(res?.data?.sect?.id)
-          setCastId(res?.data?.caste)
-          setDob(res?.data?.sect?.dob)
-          setGenderId(res?.data?.gender)
-          setAgeData(res?.data?.age)
-          setHeight(res?.data?.height)
-          setWeight(res?.data?.weight)
-          setMaslakId(res?.data?.maslak?.id)
-          setImageData(res?.data?.profile_images)
-        }
-      })
-      .catch((err) => {
-        console.log('errrr', err);
-
-      })
-  }
 
   useEffect(() => {
     getSectData()
@@ -235,7 +201,7 @@ const EditPresonalInfo = ({ navigation }) => {
   const getSectData = () => {
     HomeService.getsectList()
       .then((res) => {
-        // console.log('ressectorrrrrrrrrrrrrr', res);
+        console.log('ressec>>>>>>>>>>>>>>>>>>>>>>>----sectot----------0000000000000000000000000000', res);
 
         if (res && res.status == true) {
           setSectorData(res.data)
@@ -247,10 +213,45 @@ const EditPresonalInfo = ({ navigation }) => {
 
       })
   }
+  const [userProfileData, setUserProfileData] = useState([])
+  useEffect(() => {
+    geUserFullProfile()
+  }, [])
+
+
+  const geUserFullProfile = () => {
+
+    HomeService.getUserProfile()
+      .then((res) => {
+        // console.log('---------------------------fatchhhhhh--------000000000000000000000000000000------', JSON.stringify(res));
+        if (res && res.status === true) {
+          const data = res.data;
+          setUserProfileData(data);
+          setName(data.name || '');
+          setImageData(data.profile_images || []);
+          if (data.sect) setSectorData(prevData => prevData.some(item => item.id === data.sect.id) ? prevData : [...prevData, data.sect]);
+          setSectorId(data.sect?.id);
+          if (data.user_caste) setCastData(prevData => prevData.some(item => item.id === data.user_caste.id) ? prevData : [...prevData, data.user_caste]);
+          setCastId(data.user_caste?.id);
+          setDob(data.dob || '');
+          setDateData(data.dob || '');
+          setGenderId(data.gender || null);
+          setAgeData(data.age || '');
+          setHeight(data.height || '');
+          setWeight(data.weight || '');
+          if (data.maslak) setCastData(prevData => prevData.some(item => item.id === data.maslak.id) ? prevData : [...prevData, data.maslak]);
+          setMaslakId(data.maslak?.id || null);
+        }
+      })
+      .catch((err) => {
+        console.log('errrr-------------======================---------', err);
+
+      })
+  }
 
   useEffect(() => {
     getMaslakData(),
-    getCastkData()
+      getCastkData()
   }, [])
 
   const [maslakData, setMaslakData] = useState([])
@@ -271,11 +272,15 @@ const EditPresonalInfo = ({ navigation }) => {
       })
   }
   const handleSelectMaslak = (item) => {
-    setMaslakId(item.id);
+    setMaslakId(item);
   };
 
 
   const [castData, setCastData] = useState([])
+  const [castId, setCastId] = useState(null);
+  const handleSelectCast = (item) => {
+    setCastId(item);
+  };
   const getCastkData = () => {
     AuthService.getCastkList()
       .then((res) => {
@@ -291,44 +296,42 @@ const EditPresonalInfo = ({ navigation }) => {
       })
   }
 
-  const [castId, setCastId] = useState(null);
-  const handleSelectCast = (item) => {
-    setCastId(item.id);
-  };
 
-  const [genderData, setGenderData] = useState([
-    {
-      id: 1,
-      name: 'Male'
-    },
-    {
-      id: 2,
-      name: 'Female'
-    },
 
-  ])
   const [genderId, setGenderId] = useState(null);
-  const handleSelectGender = (item) => {
-    setGenderId(item.name);
+  const [genderName, setGenderName] = useState(null);
+
+  const handleSelectGender = (selectedItem) => {
+    if (!selectedItem) return;
+    setGenderId(selectedItem.id);
+    setGenderName(selectedItem.name)
   };
 
-  // console.log('castttttttttttttttttttttt', ImageData)
+
 
   const getPersonalInfo = () => {
-   
+
+    const transformedImages = Object.values(ImageData || {}).map(image => ({
+      fileName: image.fileName,
+      url: image.url
+    }));
+
     let data = {
       "name": name,
       "sector": sectorId,
       "sectorName": sectorName,
       "cast": castId,
       "dob": dob,
-      "gender": genderId,
+      "gender": genderName,
       "age": AgeData,
       "height": height,
       "weight": weight,
       "maslakId": maslakId,
-      "images": ImageData,
+      "images": transformedImages,
     }
+
+    // console.log('gggggggggggggggggggggggggggggggggggggggggg',data);
+
     NavigationService.navigate('EditProfessionalInfo', { personalData: data })
   }
 
@@ -382,21 +385,36 @@ const EditPresonalInfo = ({ navigation }) => {
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Select Sector</Text>
+
+
               <SinglePicker
-                data={sectorData}
-                placeholder="Select Sector"
-                onSelectItem={handleSelectItem}
+                labelKey="name"
+                valueKey="id"
+                placeholder="Select State"
+                options={sectorData}
+                selectedValue={sectorId}
+                onValueChange={handleSelectItem}
               />
+
+
+
+
+
             </View>
           </View>
 
           <View style={styles.inputbox_view}>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Cast</Text>
-              <SinglePicker
-                data={castData}
+              <CastPicker
+                labelKey="name"
+                valueKey="id"
                 placeholder="Select Cast"
-                onSelectItem={handleSelectCast} />
+                options={castData}
+                selectedValue={castId}
+                onValueChange={handleSelectCast} />
+
+
             </View>
 
             <View>
@@ -425,11 +443,27 @@ const EditPresonalInfo = ({ navigation }) => {
           <View style={styles.inputbox_view}>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Gender</Text>
-              <SinglePicker data={genderData}
+              {/* <GenderPicker
+                // label="Gender"
+                labelKey="name"
+                valueKey="id"
                 placeholder="Select Gender"
-                onSelectItem={handleSelectGender}
+                options={[
+                  { id: 1, name: 'Male' },
+                  { id: 2, name: 'Female' }
+                ]}
+                selectedValue={genderId} // This will now correctly update
+                onValueChange={handleSelectGender} // Pass the full object
+              /> */}
 
+              <AppTextInput
+                inputContainerStyle={{ ...styles.inputcontainer_sty }}
+                inputStyle={{ ...styles.text_input, color: colors.secondaryFontColor }}
+                value={genderId}
+                // onChangeText={(val) => setHeight(val)}
+                editable={false}
               />
+
             </View>
             <View>
               <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>Height</Text>
@@ -466,10 +500,12 @@ const EditPresonalInfo = ({ navigation }) => {
           </View>
           <Text style={{ ...styles.input_title, marginTop: (10), color: colors.secondaryFontColor }}>Maslak</Text>
           <SingleSelectPicker
-            data={maslakData}
+            labelKey="name"
+            valueKey="id"
             placeholder="Select Maslak"
-            onSelectItem={handleSelectMaslak}
-          />
+            options={maslakData}
+            selectedValue={maslakId}
+            onValueChange={handleSelectMaslak} />
           <View style={{ ...styles.inputbox_view, marginBottom: (30), marginTop: (30) }}>
 
             <Pressable
@@ -553,40 +589,40 @@ const styles = StyleSheet.create({
   },
   labeltxt: {
     fontFamily: FONTS.Inter.semibold,
-    fontSize:11,
-    marginTop:7
+    fontSize: 11,
+    marginTop: 7
   },
   user_name: {
     fontFamily: FONTS.Inter.bold,
-    fontSize:14,
-    marginLeft:10,
+    fontSize: 14,
+    marginLeft: 10,
   },
   inputbox_view: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop:15,
+    marginTop: 15,
 
   },
   input_title: {
-    fontSize:12,
+    fontSize: 12,
     fontFamily: FONTS.Inter.semibold,
   },
   data_txt: {
-    fontSize:13,
+    fontSize: 13,
     fontFamily: FONTS.Inter.medium,
   },
   inputcontainer_sty: {
     alignSelf: 'center',
-    height:45,
-    borderRadius:5,
+    height: 45,
+    borderRadius: 5,
     borderWidth: 1,
-    paddingLeft:7,
-    width:150,
+    paddingLeft: 7,
+    width: 150,
   },
   img_circle: {
-    height:80,
-    width:80,
+    height: 80,
+    width: 80,
     borderWidth: 1,
     borderColor: '#666',
     alignItems: 'center',
@@ -595,13 +631,13 @@ const styles = StyleSheet.create({
   },
   user_img: {
     height: 74,
-    width:74,
+    width: 74,
     resizeMode: 'cover',
-    borderRadius:35
+    borderRadius: 35
   },
   edit_img: {
-    height:30,
-    width:30,
+    height: 30,
+    width: 30,
     tintColor: 'rgba(30,68,28,255)',
     position: 'absolute',
     bottom: 0,

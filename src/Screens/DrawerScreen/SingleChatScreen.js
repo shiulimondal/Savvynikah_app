@@ -66,7 +66,7 @@ const SingleChatScreen = () => {
   const renderMessage = useCallback(
     (item, isSender) => {
       const messageBoxStyle = isSender ? styles.senderMessageBox : styles.receiverMessageBox;
-      const triangleStyle = isSender ? styles.senderTriangle : styles.receiverTriangle;
+      // const triangleStyle = isSender ? styles.senderTriangle : styles.receiverTriangle;
       const containerStyle = isSender ? styles.senderContainer : styles.receiverContainer;
       const userImage = isSender ? messageData.sender_image : messageData.receiver_image;
 
@@ -75,7 +75,7 @@ const SingleChatScreen = () => {
           {!isSender && <Image source={{ uri: userImage }} style={styles.userImage} />}
           <View style={styles.messageContainer}>
             <View style={[styles.messageBox, messageBoxStyle]}>
-              <View style={[styles.triangle, triangleStyle]} />
+              {/* <View style={[styles.triangle, triangleStyle]} /> */}
               <Text numberOfLines={6} style={styles.messageText}>
                 {item.message_body}
               </Text>
@@ -167,17 +167,20 @@ const styles = StyleSheet.create({
     width: moderateScale(230),
     borderRadius: moderateScale(5),
     position: 'relative',
+    paddingBottom:moderateScale(12)
   },
   messageText: {
     fontFamily: FONTS.Inter.regular,
     fontSize: moderateScale(13),
+    color:'#000'
   },
   timeText: {
     position: 'absolute',
-    bottom: moderateScale(5),
+    bottom: moderateScale(0),
     right: moderateScale(5),
     fontSize: moderateScale(10),
     fontFamily: FONTS.Inter.medium,
+    color:'#999'
   },
   senderContainer: {
     flexDirection: 'row',
@@ -196,20 +199,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginLeft: moderateScale(10),
   },
-  triangle: {
-    position: 'absolute',
-    width: 0,
-    height: 0,
-    borderStyle: 'solid',
-    backgroundColor: 'transparent',
-  },
-  senderTriangle: {
-    right: -moderateScale(13),
-    borderRightWidth: moderateScale(15),
-    borderTopWidth: moderateScale(7),
-    borderBottomWidth: moderateScale(2),
-    borderRightColor: '#fff',
-  },
+  // triangle: {
+  //   position: 'absolute',
+  //   width: 0,
+  //   height: 0,
+  //   borderStyle: 'solid',
+  //   backgroundColor: 'transparent',
+  // },
+  // senderTriangle: {
+  //   right: -moderateScale(13),
+  //   borderRightWidth: moderateScale(15),
+  //   borderTopWidth: moderateScale(7),
+  //   borderBottomWidth: moderateScale(2),
+  //   borderRightColor: '#fff',
+  // },
   receiverTriangle: {
     left: -moderateScale(13),
     borderLeftWidth: moderateScale(15),

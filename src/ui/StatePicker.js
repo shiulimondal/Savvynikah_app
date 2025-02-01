@@ -5,7 +5,7 @@ import { moderateScale } from '../../Constants/PixelRatio';
 import { FONTS } from '../../Constants/Fonts';
 
 const { height, width } = Dimensions.get('screen');
-const SingleSelectPicker = ({ label, options, selectedValue, onValueChange, labelKey = "option_name", valueKey = "id", placeholder = "Select" }) => {
+const StatePicker = ({ label, options, selectedValue, onValueChange, labelKey = "option_name", valueKey = "id", placeholder = "Select" }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
 
@@ -139,4 +139,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SingleSelectPicker;
+export default StatePicker;

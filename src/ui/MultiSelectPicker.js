@@ -7,75 +7,28 @@ const MultiSelectPicker = ({ data, placeholder, onSelectItem }) => {
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
 
-
   const toggleItemSelection = (item) => {
+    const updatedItems = selectedItems.some(selected => selected.value === item.value)
+      ? selectedItems.filter(selected => selected.value !== item.value)
+      : [...selectedItems, item];
 
-    const nextSelectedItems = selectedItems.includes(item.id)
-      ? selectedItems.filter((selectedId) => selectedId !== item.id)
-      : [...selectedItems, item.id];
-
-    setSelectedItems(nextSelectedItems);
+    setSelectedItems(updatedItems);
   };
 
   useEffect(() => {
     onSelectItem && onSelectItem(selectedItems);
   }, [selectedItems]);
 
-  const removeSelectedItem = (id) => {
-    setSelectedItems((prevSelectedItems) =>
-      prevSelectedItems.filter((selectedId) => selectedId !== id)
-    );
-  };
-
 
 
   return (
     <View style={styles.container}>
-
-      {/* <View style={styles.selectedItemsContainer}>
-        {selectedItems.map((id) => {
-          const selectedItem = data.find((item) => item.id === id);
-          return (
-            <View key={id} style={styles.selectedItem}>
-              <Text style={{
-                fontSize: 13,
-                fontFamily: FONTS.Inter.medium,
-                color: '#000'
-              }}>{selectedItem.name}</Text>
-              <TouchableOpacity onPress={() => removeSelectedItem(id)}>
-                <Icon name="close" type="AntDesign" size={20} color="#000" />
-              </TouchableOpacity>
-            </View>
-          );
-        })}
-      </View> */}
-
-
       <TouchableOpacity style={styles.openPickerButton} onPress={() => setPickerVisible(true)}>
-
-        {selectedItems.length > 0 ? (
-          <Text style={{
-            fontSize: 13,
-            fontFamily: FONTS.Inter.medium,
-            color: '#000'
-          }}>
-            {selectedItems
-              .map((id) => {
-                const selectedItem = data.find((item) => item.id === id);
-                return selectedItem ? selectedItem.name : '';
-              })
-              .filter(Boolean)
-              .join(', ')}
-          </Text>
-        ) : (
-          <Text style={{
-            fontSize: 13,
-            fontFamily: FONTS.Inter.regular,
-            color: '#000'
-          }}>{placeholder}</Text>
-        )}
-
-
+        <Text style={{ fontSize: 13, fontFamily: FONTS.Inter.medium, color: '#000' }}>
+          {selectedItems.length > 0
+            ? selectedItems.map(item => item.label).join(', ')
+            : placeholder}
+        </Text>
         <Icon name="down" type="AntDesign" size={17} color="#000" />
       </TouchableOpacity>
 
@@ -85,16 +38,17 @@ const MultiSelectPicker = ({ data, placeholder, onSelectItem }) => {
             <Text style={styles.modalTitle}>Select Items</Text>
             <FlatList
               data={data}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
+              keyExtractor={(item) => item?.value?.toString()}
+              renderItem={({ item,index }) => (
                 <TouchableOpacity
+                index={index}
                   style={styles.optionItem}
                   onPress={() => toggleItemSelection(item)}
                 >
-                  <Text style={selectedItems.includes(item.id) ? styles.selectedText : styles.unselectedText}>
-                    {item.name}
+                  <Text style={selectedItems.some(selected => selected.value === item.value) ? styles.selectedText : styles.unselectedText}>
+                    {item.label}
                   </Text>
-                  {selectedItems.includes(item.id) && (
+                  {selectedItems.some(selected => selected.value === item.value) && (
                     <Icon name="checkmark" size={20} color="green" />
                   )}
                 </TouchableOpacity>

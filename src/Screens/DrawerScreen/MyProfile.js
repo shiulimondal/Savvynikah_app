@@ -14,8 +14,8 @@ const MyProfile = () => {
     const colors = useTheme();
     const { userData } = useSelector(state => state.User)
     const [userProfileData, setUserProfileData] = useState([])
-    console.log('ggggggggggggggggggggggg',);
-    
+//   console.log('userDatauserDatauserDatauserData',userData);
+
     useEffect(() => {
         geUserFullProfile()
     }, [])
@@ -24,7 +24,7 @@ const MyProfile = () => {
         
         HomeService.getUserProfile()
             .then((res) => {
-                console.log('-------------------------------------------------profile---------------------', JSON.stringify(res));
+                // console.log('---------------------------------------0000000000000000000000--------', JSON.stringify(res));
                 if (res && res.status === true) {
                     setUserProfileData(res.data);
                 }
@@ -34,13 +34,6 @@ const MyProfile = () => {
                 console.log('errrr', err);
 
             })
-    }
-
-    function toFeet(n) {
-        var realFeet = (n * 0.3937) / 12;
-        var feet = Math.floor(realFeet);
-        var inches = Math.round((realFeet - feet) * 12);
-        return feet + 'ft-' + inches + 'inch';
     }
 
     const DateofBirth = new Date(userProfileData?.dob).toLocaleDateString("en-GB", {
@@ -74,7 +67,7 @@ const MyProfile = () => {
                 <View style={styles.line} />
                 <View style={styles.age_view}>
                     <Text style={{ ...styles.age_txt, color: colors.light_txt }}>Height</Text>
-                    <Text style={{ ...styles.age_txt, color: colors.secondaryFontColor }}>{toFeet(userProfileData?.height)}</Text>
+                    <Text style={{ ...styles.age_txt, color: colors.secondaryFontColor }}>{userProfileData?.height} Cm</Text>
                 </View>
                 <View style={styles.line} />
                 <View style={styles.age_view}>

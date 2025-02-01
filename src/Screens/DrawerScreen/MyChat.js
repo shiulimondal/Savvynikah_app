@@ -18,7 +18,7 @@ const MyChat = () => {
     const colors = useTheme();
     const [loading, setLoading] = useState(true);
     const [userList, setUserList] = useState([]);
-    const {  } = useSelector(state => state.User);
+    const { } = useSelector(state => state.User);
 
     console.log('chattttuserDatatttttttttttttttttttttttttttttttttt', JSON.stringify(userList));
 
@@ -41,13 +41,13 @@ const MyChat = () => {
         }, [])
     );
 
-    const getChatWith = (itemId,Rname) => {
-        console.log('itemId,RnameitemId,RnameitemId,Rname',itemId,Rname);
-        
+    const getChatWith = (itemId, Rname) => {
+        console.log('itemId,RnameitemId,RnameitemId,Rname', itemId, Rname);
+
         const data = {
             "user_id": itemId
         };
-        console.log('Fetching chat data------------------------------------- for user:', data);   
+        console.log('Fetching chat data------------------------------------- for user:', data);
         HomeService.setChatUser(data)
             .then((res) => {
                 console.log('Fetched chat user============================= response:', res);
@@ -86,33 +86,33 @@ const MyChat = () => {
                         {userList.length > 0 ? (
                             userList.map((item, index) => (
                                 // <ChatListCard key={item.id || index} item={item} index={index} />
-                                <TouchableOpacity
-                                key={index}
-                                onPress={() => getChatWith(item?.receiver_id, item?.receiver_name)}
-                                style={{ ...styles.chatcontainer, backgroundColor: colors.secondaryThemeColor }}>
-                                <Image source={{ uri: item?.receiver_image }} style={styles.user_img} />
-                                <View style={styles.meddagebody}>
-                                    <View>
-                                        <Text style={{ ...styles.user_name, color: colors.secondaryFontColor }}>{item?.receiver_name}</Text>
-                                        <Text style={{ ...styles.message_txt, color: colors.light_txt }}>{item?.lastMessage?.message_body}</Text>
-                                    </View>
-                                    <View style={{alignItems:'center'}}>
-                                        {
-                                            item?.unread_messages_count > 0 ?
-                                                <View style={styles.unread_circle}>
-                                                    <Text style={{ ...styles.countnumber, color: colors.secondaryThemeColor }}>
-                                                        {unseenMessage}</Text>
-                                                </View>
-                                                :
-                                                null
-                                        }
-                                        <Text style={{ ...styles.countnumber,marginTop:moderateScale(7), color: colors.secondaryFontColor }}>
-                                            {item?.lastMessage?.time}</Text>
-                                    </View>
-                    
-                                </View>
-                    
-                            </TouchableOpacity>
+                                    <TouchableOpacity
+                                        key={index}
+                                        onPress={() => getChatWith(item?.receiver_id, item?.receiver_name)}
+                                        style={{ ...styles.chatcontainer, backgroundColor: colors.secondaryThemeColor }}>
+                                        <Image source={{ uri: item?.receiver_image }} style={styles.user_img} />
+                                        <View style={styles.meddagebody}>
+                                            <View>
+                                                <Text style={{ ...styles.user_name, color: colors.secondaryFontColor }}>{item?.receiver_name}</Text>
+                                                <Text style={{ ...styles.message_txt, color: colors.light_txt }}>{item?.lastMessage?.message_body}</Text>
+                                            </View>
+                                            <View style={{ alignItems: 'center' }}>
+                                                {
+                                                    item?.unread_messages_count > 0 ?
+                                                        <View style={styles.unread_circle}>
+                                                            <Text style={{ ...styles.countnumber, color: colors.secondaryThemeColor }}>
+                                                                {unseenMessage}</Text>
+                                                        </View>
+                                                        :
+                                                        null
+                                                }
+                                                <Text style={{ ...styles.countnumber_timt, marginTop: moderateScale(7), color: colors.secondaryFontColor }}>
+                                                    {item?.lastMessage?.time}</Text>
+                                            </View>
+
+                                        </View>
+                                    </TouchableOpacity>
+
                             ))
                         ) : (
                             <View style={styles.noDataView}>
@@ -130,28 +130,30 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         marginHorizontal: 0,
-         backgroundColor:'#fff'
+        backgroundColor: '#fff'
     },
     noDataView: {
         justifyContent: 'center',
         alignItems: 'center',
         padding: moderateScale(20),
         marginTop: moderateScale(100),
-        flex:1,
-        backgroundColor:'#fff'
+        flex: 1,
+        backgroundColor: '#fff'
     },
     nodataImg: {
         height: moderateScale(100),
         width: moderateScale(100),
         tintColor: 'green'
     },
-
+    Main_list_view: {
+        marginHorizontal: moderateScale(7),
+    },
     chatcontainer: {
         flexDirection: 'row',
         alignItems: 'center',
         elevation: 4,
         padding: moderateScale(10),
-        paddingHorizontal: moderateScale(15)
+        paddingHorizontal: moderateScale(5)
     },
     user_img: {
         height: moderateScale(65),
@@ -185,6 +187,14 @@ const styles = StyleSheet.create({
     countnumber: {
         fontFamily: FONTS.Inter.medium,
         fontSize: moderateScale(9),
+        color:'#fff'
+    },
+    countnumber_timt:{
+        fontFamily: FONTS.Inter.medium,
+        fontSize: moderateScale(9),
+        color: '#999',
+        position: 'absolute',
+        right: 5
     }
 });
 

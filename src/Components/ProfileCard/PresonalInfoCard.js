@@ -11,14 +11,6 @@ const PresonalInfoCard = ({ userProfileData }) => {
     
     const colors = useTheme();
     const [isExpanded, setIsExpanded] = useState(false);
-
-    function toFeet(n) {
-        var realFeet = (n * 0.3937) / 12;
-        var feet = Math.floor(realFeet);
-        var inches = Math.round((realFeet - feet) * 12);
-        return feet + 'ft-' + inches + 'inch';
-    }
-
     const DateofBirth = new Date(userProfileData?.dob).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "long",
@@ -65,7 +57,7 @@ const PresonalInfoCard = ({ userProfileData }) => {
             </View>
             <View style={styles.name_view}>
                 <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Height</Text>
-                <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{toFeet(userProfileData?.height)}</Text>
+                <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.height} Cm</Text>
             </View>
             <View style={styles.name_view}>
                 <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Weight</Text>
@@ -74,7 +66,7 @@ const PresonalInfoCard = ({ userProfileData }) => {
 
             <View style={styles.name_view}>
                 <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Cast</Text>
-                <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.caste}</Text>
+                <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.user_caste?.name}</Text>
             </View>
 
             <View style={styles.name_view}>

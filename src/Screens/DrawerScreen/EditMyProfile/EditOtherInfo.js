@@ -18,6 +18,8 @@ import Congrats from '../../../Components/CongratsCard/Congrats';
 import SingleSelectPicker from '../../../ui/SingleSelectPicker';
 import AuthService from '../../../Services/Auth';
 import HomeService from '../../../Services/HomeServises';
+import StatePicker from '../../../ui/StatePicker';
+import CityPicker from '../../../ui/CityPicker';
 
 const { height, width } = Dimensions.get('screen')
 // create a component
@@ -90,14 +92,20 @@ const EditOtherInfo = ({ navigation }) => {
     const geUserFullProfile = () => {
         HomeService.getUserProfile()
             .then((res) => {
-                console.log('-------------------------------------------------profile---------------------', JSON.stringify(res));
+                // console.log('-------------------------------------------------profile---------------------', JSON.stringify(res));
                 if (res && res.status === true) {
-                    setUserProfileData(res.data);
-                    setAddress(res?.data?.address)
-                    setPinCode(res?.data?.pin)
-                    setHobby(res?.data?.hobby)
-                    setHabbit(res?.data?.habits)
-                    setAbout(res?.data?.description)
+                    const data = res.data
+                    setUserProfileData(data);
+                    setAddress(data?.address)
+                    if (data?.state) setStateData(prevData => prevData.some(item => item.id === data?.state?.id) ? prevData : [...prevData, data.state]);
+                    setateId(data?.state?.id)
+                    getCityData(data?.state?.id)
+                    if (data?.city) setCityData(prevData => prevData.some(item => item.id === data?.city?.id) ? prevData : [...prevData, data.city]);
+                    setCityId(data?.city?.id)
+                    setPinCode(data?.pin)
+                    setHobby(data?.hobby)
+                    setHabbit(data?.habits)
+                    setAbout(data?.description)
                 }
             })
             .catch((err) => {
@@ -148,7 +156,7 @@ const EditOtherInfo = ({ navigation }) => {
 
 
     const getUpdateProfile = (() => {
-      
+
         let data = {
             "name": getOtherInfo?.name,
             "dob": getOtherInfo?.dob,
@@ -175,10 +183,10 @@ const EditOtherInfo = ({ navigation }) => {
             "images": getOtherInfo?.images
         }
         setBtnLoader(true)
-        console.log('Signup data:==========000000000000000000000000000000000000000000==========', data);
+        // console.log('Signup data:==========000000000000000000000000000000000000000000==========', JSON.stringify(data));
         AuthService.getUpdateRegProfile(data)
             .then((res) => {
-                console.log('Signup successful========================================', res);
+                // console.log('Signup successful========================================', JSON.stringify(res));
                 if (res && res.status == true) {
                     NavigationService.navigate('Home')
                     setBtnLoader(false);
@@ -187,7 +195,6 @@ const EditOtherInfo = ({ navigation }) => {
                     setBtnLoader(false)
                     Toast.show(res.message)
                 }
-                console.log('Signup successful======================', res);
             })
             .catch((err) => {
                 console.log('finallllllllllllllllSignup error======', err);
@@ -247,19 +254,37 @@ const EditOtherInfo = ({ navigation }) => {
                     </View>
 
                     <Text style={{ ...styles.input_title, marginTop: (10), color: colors.secondaryFontColor }}>Select State</Text>
-                    <SingleSelectPicker
+                    {/* <SingleSelectPicker
                         data={stateData}
                         placeholder="Select State"
                         onSelectItem={handleStateItem}
+                    /> */}
+
+                    <StatePicker
+                        labelKey="name"
+                        valueKey="id"
+                        placeholder="Select State"
+                        options={stateData}
+                        selectedValue={stateId}
+                        onValueChange={handleStateItem}
                     />
 
                     <View style={styles.inputbox_view}>
                         <View>
                             <Text style={{ ...styles.input_title, color: colors.secondaryFontColor }}>City</Text>
-                            <SinglePicker
+                            {/* <SinglePicker
                                 data={cityData}
                                 placeholder="Select City"
                                 onSelectItem={handleCityItem}
+                            /> */}
+
+                            <CityPicker
+                                labelKey="name"
+                                valueKey="id"
+                                placeholder="Select State"
+                                options={cityData}
+                                selectedValue={cityId}
+                                onValueChange={handleCityItem}
                             />
                         </View>
 
@@ -320,7 +345,7 @@ const EditOtherInfo = ({ navigation }) => {
                     <View style={{ ...styles.inputbox_view, marginBottom: (30), marginTop: (30) }}>
 
                         <Pressable
-                             onPress={() => NavigationService.goBack()}
+                            onPress={() => NavigationService.goBack()}
                             style={{ ...styles.Previousbutton_sty, borderColor: colors.buttonColor }}>
                             <Text style={{ ...styles.buttn_txt, color: colors.buttonColor }}>Previous</Text>
                         </Pressable>
@@ -365,8 +390,8 @@ const styles = StyleSheet.create({
     labeltxt: {
         fontFamily: FONTS.Inter.semibold,
         fontSize: 11,
-        marginTop: 7 
-      },
+        marginTop: 7
+    },
     user_name: {
         fontFamily: FONTS.Inter.bold,
         fontSize: 14,
@@ -395,7 +420,7 @@ const styles = StyleSheet.create({
         borderRadius: 7
     },
     img_circle: {
-        height:80,
+        height: 80,
         width: 80,
         borderWidth: 1,
         borderColor: '#666',

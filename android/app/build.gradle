@@ -23,8 +23,8 @@ android {
         applicationId "com.savvynikah"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "2.0.3"
+        versionCode 7
+        versionName "2.0.5"
     }
    signingConfigs {
         debug {
