@@ -65,7 +65,7 @@ const ViewProfile = () => {
         setLoading(true);
         HomeService.getuserFullData(data)
             .then((res) => {
-                console.log('uuuuuuuuuuuuuuuuuu-------------------------------------------', JSON.stringify(res));
+                // console.log('uuuuuuuuuuuuuuuuuu-------------------------------------------', JSON.stringify(res));
 
                 if (res && res.success === true) {
                     if (res.data) {
@@ -197,8 +197,6 @@ const ViewProfile = () => {
                 </>
             )}
 
-
-
             <Modal
                 isVisible={isModalVisible}
                 backdropOpacity={3}
@@ -221,7 +219,6 @@ const ViewProfile = () => {
                     </TouchableOpacity>
                 </View>
             </Modal>
-
 
             <ImageViewing
                 images={images}

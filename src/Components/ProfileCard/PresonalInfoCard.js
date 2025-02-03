@@ -56,7 +56,7 @@ const PresonalInfoCard = ({ userProfileData }) => {
                 <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.gender}</Text>
             </View>
             <View style={styles.name_view}>
-                <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Height</Text>
+                <Text style={{ ...styles.name_txt, color: colors.light_txt }}>Height (Cm)</Text>
                 <Text style={{ ...styles.username_txt, color: colors.secondaryFontColor }}>{userProfileData?.height} Cm</Text>
             </View>
             <View style={styles.name_view}>

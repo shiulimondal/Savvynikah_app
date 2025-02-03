@@ -1,6 +1,6 @@
 // import libraries
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Pressable, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Pressable, Image, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Header from '../../../Components/Header/Header';
 import { AppButton, AppTextInput, Icon, Picker, useTheme, Text } from 'react-native-basic-elements';
 import { FONTS } from '../../../Constants/Fonts';
@@ -26,12 +26,8 @@ const EditProfessionalInfo = ({ navigation }) => {
   const colors = useTheme();
   const route = useRoute()
   const getPersonalData = route.params.personalData
-
-  console.log('getPersonalDatagetPersonalDatagetPersonalData=====================', getPersonalData);
-
-
   const [liveIn, setLiveIn] = useState('');
-
+  const [loading, setLoading] = useState(true);
   const orderStatusData = [
     { name: 'Personal Info' },
     { name: 'Professional Info' },
@@ -91,14 +87,13 @@ const EditProfessionalInfo = ({ navigation }) => {
   }, [])
 
   const geUserFullProfile = () => {
+    setLoading(true);
     HomeService.getUserProfile()
       .then((res) => {
-        console.log('langgggggggggggggggggggggggggg---------------------------------------ggggggggg', JSON.stringify(res));
+        // console.log('langgggggggggggggggggggggggggg---------------------------------------ggggggggg', JSON.stringify(res));
         if (res && res.status === true) {
-
+       
           const data = res.data;
-          console.log('langgggggggggggggggggggggggggggggggggggggg', data.languages);
-
           setUserProfileData(data);
           if (data?.education) setEducationData(prevData => prevData.some(item => item.id === data?.education?.id) ? prevData : [...prevData, data.education]);
           setEducatonId(data?.education?.id)
@@ -113,18 +108,18 @@ const EditProfessionalInfo = ({ navigation }) => {
               return [...prevData, ...newLanguages];
             });
           }
-
           // if (data?.languages) setLanguageData(prevData => prevData.some(item => item.id === data?.languages?.id) ? prevData : [...prevData, data.languages]);
           // setLanguageId(data?.languages ? data.languages.map(lang => lang.id) : []);
           setLanguageId(data?.languages?.map(langId => langId.id))
           setLiveIn(data?.lives_in)
           if (data?.user_marital_status) setStatusData(prevData => prevData.some(item => item.id === data?.user_marital_status?.id) ? prevData : [...prevData, data.user_marital_status]);
           setStatusId(data?.user_marital_status?.id)
+          setLoading(false);
         }
       })
       .catch((err) => {
         console.log('errrr', err);
-
+        setLoading(false);
       })
   }
 
@@ -219,9 +214,6 @@ const EditProfessionalInfo = ({ navigation }) => {
     setStatusId(item);
   };
 
-  console.log('secterr------------------------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', StatusId);
-
-
   const getProfesoanlInfo = () => {
 
     let data = {
@@ -255,6 +247,12 @@ const EditProfessionalInfo = ({ navigation }) => {
           labels={orderStatusData.map((item, ind) => ind.toString())}
         />
       </View>
+        {loading ? (
+              <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="green" />
+              </View>
+            ) : (
+              <>
       <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
 
         <View style={{ marginHorizontal: (15), marginTop: (15) }}>
@@ -372,6 +370,9 @@ const EditProfessionalInfo = ({ navigation }) => {
         </View>
 
       </KeyboardAwareScrollView>
+
+      </>
+      )}
     </View>
   );
 };
@@ -381,6 +382,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 30
+},
   labelContainer: {
     alignItems: 'center',
   },

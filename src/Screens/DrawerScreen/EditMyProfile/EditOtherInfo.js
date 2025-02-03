@@ -1,6 +1,6 @@
 // import libraries
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, Pressable, Image, Dimensions, ActivityIndicator } from 'react-native';
 import Header from '../../../Components/Header/Header';
 import { AppButton, AppTextInput, Icon, Picker, useTheme, Text } from 'react-native-basic-elements';
 import { FONTS } from '../../../Constants/Fonts';
@@ -36,6 +36,7 @@ const EditOtherInfo = ({ navigation }) => {
     const [habbit, setHabbit] = useState('');
     const [about, setAbout] = useState('');
     const [btnLoader, setBtnLoader] = useState(false);
+      const [loading, setLoading] = useState(true);
 
     const orderStatusData = [
         { name: 'Personal Info' },
@@ -90,6 +91,7 @@ const EditOtherInfo = ({ navigation }) => {
     }, [])
 
     const geUserFullProfile = () => {
+        setLoading(true);
         HomeService.getUserProfile()
             .then((res) => {
                 // console.log('-------------------------------------------------profile---------------------', JSON.stringify(res));
@@ -106,11 +108,12 @@ const EditOtherInfo = ({ navigation }) => {
                     setHobby(data?.hobby)
                     setHabbit(data?.habits)
                     setAbout(data?.description)
+                    setLoading(false);
                 }
             })
             .catch((err) => {
                 console.log('errrr', err);
-
+                setLoading(false);
             })
     }
 
@@ -222,6 +225,12 @@ const EditOtherInfo = ({ navigation }) => {
                     labels={orderStatusData.map((item, ind) => ind.toString())}
                 />
             </View>
+            {loading ? (
+                          <View style={styles.loaderContainer}>
+                            <ActivityIndicator size="large" color="green" />
+                          </View>
+                        ) : (
+                          <>
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false}>
 
                 <View style={{ marginHorizontal: (15), marginTop: (15) }}>
@@ -375,6 +384,9 @@ const EditOtherInfo = ({ navigation }) => {
 
             </KeyboardAwareScrollView>
 
+            </>
+      )}
+
         </View>
     );
 };
@@ -383,6 +395,12 @@ const EditOtherInfo = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 30
     },
     labelContainer: {
         alignItems: 'center',
